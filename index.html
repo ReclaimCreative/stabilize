@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reclaim Creative</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1014;
+      --surface:   #1a1c22;
+      --surface2:  #22252d;
+      --accent:    #d4924a;
+      --accent-dim:#8a5c28;
+      --text:      #f0eeea;
+      --muted:     #8a8a8a;
+      --border:    #2c2f38;
+      --font:      Arial, Helvetica, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.7;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 4rem;
+      height: 64px;
+      background: rgba(15, 16, 20, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    /* ─── HERO ─── */
+    #home {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 8rem 4rem 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #home::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(212,146,74,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+      border: 1px solid var(--accent-dim);
+      display: inline-block;
+      padding: 0.3rem 0.8rem;
+      border-radius: 2px;
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      max-width: 900px;
+    }
+
+    .hero-title span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 540px;
+      margin-bottom: 3rem;
+      line-height: 1.65;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--accent);
+      color: #0f1014;
+      font-family: var(--font);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .hero-cta:hover { background: #c47d35; transform: translateY(-1px); }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 2.5rem; left: 4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .hero-scroll::before {
+      content: '';
+      width: 40px; height: 1px;
+      background: var(--border);
+    }
+
+    /* ─── SECTION COMMON ─── */
+    section {
+      padding: 7rem 4rem;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+      max-width: 700px;
+    }
+
+    .divider {
+      width: 48px; height: 3px;
+      background: var(--accent);
+      margin-bottom: 2.5rem;
+      border-radius: 2px;
+    }
+
+    /* ─── ABSTRACT ─── */
+    #abstract {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .abstract-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .abstract-text p {
+      color: #c8c4be;
+      font-size: 1.0rem;
+      line-height: 1.8;
+      margin-bottom: 1.2rem;
+    }
+
+    .abstract-text p:last-child { margin-bottom: 0; }
+
+    .abstract-image-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .abstract-image-wrap img {
+      width: 100%;
+      max-width: 480px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .img-caption {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-align: center;
+    }
+
+    /* ─── ABOUT ─── */
+    #about {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .about-placeholder {
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      padding: 5rem 3rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      max-width: 600px;
+    }
+
+    .about-placeholder .placeholder-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    /* ─── DESIGN DETAILS ─── */
+    #design {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .design-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .design-group {
+      margin-bottom: 5rem;
+    }
+
+    .design-group:last-child { margin-bottom: 0; }
+
+    .design-group-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .design-group-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .design-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .design-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .design-card:hover {
+      border-color: var(--accent-dim);
+      transform: translateY(-2px);
+    }
+
+    .design-card img {
+      width: 100%;
+      display: block;
+      background: #fff;
+    }
+
+    .design-card.dark-bg img {
+      background: #1a1c22;
+    }
+
+    .design-card-info {
+      padding: 1.2rem 1.4rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .design-card-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+      color: var(--text);
+    }
+
+    .design-card-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .design-card.featured {
+      grid-column: 1 / -1;
+    }
+
+    .design-card.featured img {
+      max-height: 420px;
+      object-fit: contain;
+      padding: 2rem;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 2.5rem 4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .footer-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 800px) {
+      nav { padding: 0 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      #home, section, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .abstract-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .hero-scroll { left: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a class="nav-logo" href="#home">Reclaim Creative</a>
+  <ul class="nav-links">
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#design">Design</a></li>
+  </ul>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="home">
+  <div class="hero-tag">ENGR 415-01 &mdash; Mechatronics &middot; Spring 2026</div>
+  <h1 class="hero-title">Reclaim<br><span>Creative</span></h1>
+  <p class="hero-sub">
+    A mechatronic system that uses robotics and digital signal processing
+    to filter out essential tremor&mdash;restoring an artist's ability to draw.
+  </p>
+  <a class="hero-cta" href="#abstract">Explore the Project</a>
+  <div class="hero-scroll">Scroll to explore</div>
+</section>
+
+<!-- ─── ABSTRACT ─── -->
+<section id="abstract">
+  <div class="abstract-inner">
+    <div class="abstract-text">
+      <div class="section-label">Abstract</div>
+      <h2 class="section-title">A Solution for Artists with Essential Tremor</h2>
+      <div class="divider"></div>
+      <p>
+        Essential Tremor affects more than 10 million people in the United States.
+        It is characterized by a rhythmic shaking, most commonly in the hands and
+        forearms. For people living with essential tremor, fine motor skills&mdash;like
+        those used when drawing&mdash;are compromised. For artists, this represents a
+        significant decline in quality of life, since the base function of self
+        expression is undermined.
+      </p>
+      <p>
+        Reclaim Creative is a proposal to use a combination of robotics and digital
+        signal processing to filter out essential tremor and allow an artist to regain
+        their ability to draw. The system comprises three components: a stylus, a
+        surface outfitted with position sensors, and a Cartesian-style plotting robot
+        capable of illustrating on a 2-D surface.
+      </p>
+      <p>
+        The stylus is held by the artist inside a sensor zone where time-of-flight
+        sensors triangulate its position. The triangulated signal is filtered to remove
+        tremor content, and the cleaned signal drives the Cartesian plotter to
+        faithfully reproduce the artist's intended motion.
+      </p>
+    </div>
+    <div class="abstract-image-wrap">
+      <img src="images/image17.png" alt="Input and Filtered Spiral Overlay" />
+      <span class="img-caption">
+        Raw tremor spiral (blue) vs. filtered output (orange)&mdash;the tremor is
+        cleanly removed while preserving the artist's intended stroke.
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ABOUT ─── -->
+<section id="about">
+  <div id="about" style="max-width:1200px; margin:0 auto;">
+    <div class="section-label">About</div>
+    <h2 class="section-title">The Team</h2>
+    <div class="divider"></div>
+    <div class="about-placeholder">
+      <div class="placeholder-icon">&#9632;</div>
+      Team bios and project background coming soon.
+    </div>
+  </div>
+</section>
+
+<!-- ─── DESIGN DETAILS ─── -->
+<section id="design">
+  <div class="design-inner">
+    <div class="section-label">Design Details</div>
+    <h2 class="section-title">System Architecture &amp; Engineering</h2>
+    <div class="divider"></div>
+
+    <!-- Plotter -->
+    <div class="design-group">
+      <div class="design-group-title">Cartesian Plotter</div>
+      <div class="design-grid">
+        <div class="design-card featured">
+          <img src="images/image9.png" alt="Full Plotter CAD Assembly" />
+          <div class="design-card-info">
+            <div class="design-card-title">Full Plotter Assembly</div>
+            <div class="design-card-desc">
+              Five pieces of aluminum V-slot extrusion form the frame. Stationary GT2 belts
+              run the length of each rail, contacting the motor shaft wheels for self-tensioning.
+              Two NEMA 17 steppers drive the Y-axis gantries; one drives the X-axis carriage.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <img src="images/image14.png" alt="Gantry Plate CAD" />
+          <div class="design-card-info">
+            <div class="design-card-title">Y-Axis Gantry Plate</div>
+            <div class="design-card-desc">
+              Laser-cut gantry plate with four V-wheels engaging the 2040 extrusion rails,
+              providing smooth, low-friction travel along the Y axis.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <img src="images/image11.png" alt="Pen Lifting Mechanism CAD" />
+          <div class="design-card-info">
+            <div class="design-card-title">Pen Lifting Mechanism</div>
+            <div class="design-card-desc">
+              Spring-loaded, servo-actuated pen lifter. Neutral state is pen-down; the servo
+              presses upward to lift when no pen-down command is received, protecting the
+              drawing surface during repositioning.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stylus -->
+    <div class="design-group">
+      <div class="design-group-title">The Stylus</div>
+      <div class="design-grid">
+        <div class="design-card featured">
+          <img src="images/image15.jpg" alt="Stylus CAD Cross-Section" />
+          <div class="design-card-info">
+            <div class="design-card-title">Stylus Cross-Section</div>
+            <div class="design-card-desc">
+              Pressing the actuating tip creates a momentary circuit closure via mechanical
+              switch, powering the IR LED at the opposite end. The plotter reads this
+              infrared signal as the pen-down command, enabling precise on/off control
+              without any wireless communication.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <img src="images/image12.jpg" alt="Stylus Circuit Schematic" />
+          <div class="design-card-info">
+            <div class="design-card-title">Stylus Circuit</div>
+            <div class="design-card-desc">
+              Minimal circuit: a 1.5 V AA cell, mechanical switch, 10&Omega; current-limiting
+              resistor, and infrared LED. No microcontroller required in the stylus itself.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <img src="images/image18.jpg" alt="Sensor Array Geometry Diagram" />
+          <div class="design-card-info">
+            <div class="design-card-title">Sensor Array &amp; Position Triangulation</div>
+            <div class="design-card-desc">
+              Two VL53L7CX time-of-flight sensors placed a known distance apart on the left
+              side of the active field. The law of cosines yields X/Y Cartesian coordinates
+              from the two measured ranges R1 and R2.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signal Processing -->
+    <div class="design-group">
+      <div class="design-group-title">Signal Processing &amp; Control</div>
+      <div class="design-grid">
+        <div class="design-card featured dark-bg">
+          <img src="images/image20.png" alt="Simulink Signal Processing Block Diagram" />
+          <div class="design-card-info">
+            <div class="design-card-title">Signal Processing Pipeline</div>
+            <div class="design-card-desc">
+              Raw X and Y position data from the sensor array feeds into an FIR low-pass
+              filter block. The filtered coordinates are then algebraically remapped to
+              discrete stepper-motor steps. Sampling occurs at 60 Hz&mdash;well above
+              the Nyquist rate for typical tremor frequencies (5&ndash;12 Hz).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-logo">Reclaim Creative</div>
+  <div class="footer-meta">Will Jameson &middot; Sam Zimmerickers &middot; ENGR 415-01 &middot; Spring 2026</div>
+</footer>
+
+</body>
+</html>
