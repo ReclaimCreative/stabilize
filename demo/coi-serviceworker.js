@@ -1,4 +1,9 @@
-/* coi-serviceworker v0.1.7 - github.com/gzuidhof/coi-serviceworker (MIT) */
+/* coi-serviceworker - github.com/gzuidhof/coi-serviceworker (MIT)
+ * Modified: uses COEP: credentialless instead of require-corp so that
+ * cross-origin CDN resources (e.g. pygame-web.github.io) load without
+ * needing a Cross-Origin-Resource-Policy header on the CDN side.
+ * COOP: same-origin + COEP: credentialless still satisfies crossOriginIsolated.
+ */
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
 
@@ -12,9 +17,7 @@ self.addEventListener("fetch", function (event) {
         if (response.status === 0) return response;
         const newHeaders = new Headers(response.headers);
         newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
-        newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
-        // Allow cross-origin resources (e.g. pygame CDN) to load under COEP
-        newHeaders.set("Cross-Origin-Resource-Policy", "cross-origin");
+        newHeaders.set("Cross-Origin-Embedder-Policy", "credentialless");
         return new Response(response.body, {
           status: response.status,
           statusText: response.statusText,
