@@ -42,8 +42,10 @@ let autoPlot   = false;
 let simT       = 0;
 let trail      = [];
 let lastPlot   = null;
-let drawing    = false;
-let lastDraw   = null;
+let lmbHeld    = false;
+let drawMode   = 1;        // 1 = tremor/raw  2 = filtered
+let lastRawDraw  = null;
+let lastFiltDraw = null;
 let filtX      = { v: 0, ok: false };
 let filtY      = { v: 0, ok: false };
 let mouseW     = [BASELINE / 2, SURF_D / 2];
@@ -113,8 +115,10 @@ const C = {
   sA:    '#50b4ff',  sB:    '#ffa028',
   true:  '#64dc64',  trig:  '#ff5a46',  raw:   '#8c3228',
   arcA:  'rgba(40,90,130,0.55)',  arcB:  'rgba(130,80,20,0.55)',
-  hud:   '#bebebe',  dim:   '#373750',  label: '#7882a0',
-  draw:  'rgba(255,220,80,0.85)',  plot:  'rgba(80,220,255,0.75)',
+  hud:      '#bebebe',  dim:   '#373750',  label: '#7882a0',
+  drawRaw:  'rgba(255,100,40,0.9)',   // tremor draw — warm orange
+  drawFilt: 'rgba(60,210,255,0.9)',   // filtered draw — cyan
+  plot:     'rgba(80,220,255,0.75)',
 };
 const TRIG_RGB = [255, 90, 70];
 const BG_RGB   = [15,  15, 25];
@@ -236,6 +240,8 @@ function render(truePos, rawPos, filtPos, dA, dB) {
 
   row(mouseMode ? 'MOUSE MODE' : 'SIM MODE', mouseMode ? '#c896ff' : '#64dc64');
   if (tremorMode) row(`TREMOR  ${TREMOR_HZ}Hz  ±${TREMOR_AMP}mm`, '#ff7828');
+  row(drawMode === 1 ? 'DRAW: TREMOR  [1]' : 'DRAW: FILTERED [2]',
+      drawMode === 1 ? C.drawRaw : C.drawFilt);
   hy += 4;
   row(`d_A  ${dA.toFixed(1).padStart(8)} mm`, C.sA);
   row(`d_B  ${dB.toFixed(1).padStart(8)} mm`, C.sB);
@@ -257,13 +263,14 @@ function render(truePos, rawPos, filtPos, dA, dB) {
   let ly = 18;
   ctx.font = '12px monospace';
   for (const [color, label] of [
-    [C.true,    'True position'],
-    [C.trig,    'Filtered position'],
-    [C.raw,     'Raw triangulated'],
-    [C.sA,      'Sensor A arc'],
-    [C.sB,      'Sensor B arc'],
-    ['#ffdc50', 'Draw (hold LMB)'],
-    ['#50dcff', 'Auto-plot (P)'],
+    [C.true,     'True position'],
+    [C.trig,     'Filtered position'],
+    [C.raw,      'Raw triangulated'],
+    [C.sA,       'Sensor A arc'],
+    [C.sB,       'Sensor B arc'],
+    [C.drawRaw,  'Tremor draw  [1]+LMB'],
+    [C.drawFilt, 'Filtered draw [2]+LMB'],
+    ['#50dcff',  'Auto-plot (P)'],
   ]) {
     ctx.beginPath(); ctx.arc(lx+6, ly+5, 5, 0, Math.PI*2);
     ctx.fillStyle = color; ctx.fill();
@@ -276,6 +283,8 @@ function render(truePos, rawPos, filtPos, dA, dB) {
     ['Tab', 'Mouse / Sim', mouseMode],
     ['F',   'Filter',      filterMode],
     ['T',   'Tremor',      tremorMode],
+    ['1',   'Tremor draw', drawMode === 1],
+    ['2',   'Filt draw',   drawMode === 2],
     ['P',   'Plot path',   autoPlot],
     ['C',   'Clear',       null],
   ]) {
@@ -316,14 +325,35 @@ function loop(ts) {
   // Triangulate
   const raw = triangulate(dA, dB);
 
-  // Filter
+  // Filter — always computed so both draw modes work regardless of filterMode display toggle
   let filt = null;
-  if (raw && filterMode) {
+  if (raw) {
     if (!filtX.ok) {
       filtX.v = raw[0]; filtY.v = raw[1];
       filtX.ok = filtY.ok = true;
     }
     filt = [filterStep(filtX, raw[0]), filterStep(filtY, raw[1])];
+  }
+
+  // Draw mode — LMB traces raw (tremor) or filtered position onto the canvas
+  if (lmbHeld) {
+    if (drawMode === 1 && raw) {
+      const cur = w2s(...raw);
+      if (lastRawDraw) {
+        dctx.beginPath(); dctx.moveTo(lastRawDraw[0],lastRawDraw[1]); dctx.lineTo(cur[0],cur[1]);
+        dctx.strokeStyle = C.drawRaw; dctx.lineWidth = 3; dctx.stroke();
+      }
+      lastRawDraw = cur; lastFiltDraw = null;
+    } else if (drawMode === 2 && filt) {
+      const cur = w2s(...filt);
+      if (lastFiltDraw) {
+        dctx.beginPath(); dctx.moveTo(lastFiltDraw[0],lastFiltDraw[1]); dctx.lineTo(cur[0],cur[1]);
+        dctx.strokeStyle = C.drawFilt; dctx.lineWidth = 3; dctx.stroke();
+      }
+      lastFiltDraw = cur; lastRawDraw = null;
+    }
+  } else {
+    lastRawDraw = null; lastFiltDraw = null;
   }
 
   // Auto-plot to persistent drawing buffer
@@ -344,23 +374,12 @@ function loop(ts) {
 // ── Input ─────────────────────────────────────────────────────────────────────
 canvas.addEventListener('mousemove', e => {
   const r = canvas.getBoundingClientRect();
-  const cx = e.clientX - r.left, cy = e.clientY - r.top;
-  mouseW = s2w(cx, cy);
-  if (drawing && lastDraw) {
-    dctx.beginPath(); dctx.moveTo(lastDraw[0],lastDraw[1]); dctx.lineTo(cx,cy);
-    dctx.strokeStyle = C.draw; dctx.lineWidth = 3; dctx.stroke();
-    lastDraw = [cx, cy];
-  }
+  mouseW = s2w(e.clientX - r.left, e.clientY - r.top);
 });
 
-canvas.addEventListener('mousedown', e => {
-  const r = canvas.getBoundingClientRect();
-  drawing = true;
-  lastDraw = [e.clientX - r.left, e.clientY - r.top];
-});
-
-canvas.addEventListener('mouseup',    () => { drawing = false; lastDraw = null; });
-canvas.addEventListener('mouseleave', () => { drawing = false; lastDraw = null; });
+canvas.addEventListener('mousedown', () => { lmbHeld = true; });
+canvas.addEventListener('mouseup',    () => { lmbHeld = false; lastRawDraw = null; lastFiltDraw = null; });
+canvas.addEventListener('mouseleave', () => { lmbHeld = false; lastRawDraw = null; lastFiltDraw = null; });
 
 document.addEventListener('keydown', e => {
   switch (e.key) {
@@ -380,6 +399,12 @@ document.addEventListener('keydown', e => {
     case 'p': case 'P':
       autoPlot = !autoPlot;
       lastPlot = null;
+      break;
+    case '1':
+      drawMode = 1; lastRawDraw = null; lastFiltDraw = null;
+      break;
+    case '2':
+      drawMode = 2; lastRawDraw = null; lastFiltDraw = null;
       break;
     case 'c': case 'C':
       dctx.clearRect(0, 0, W, H);
