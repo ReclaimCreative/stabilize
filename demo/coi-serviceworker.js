@@ -11,8 +11,10 @@ self.addEventListener("fetch", function (event) {
       .then(function (response) {
         if (response.status === 0) return response;
         const newHeaders = new Headers(response.headers);
-        newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
         newHeaders.set("Cross-Origin-Opener-Policy", "same-origin");
+        newHeaders.set("Cross-Origin-Embedder-Policy", "require-corp");
+        // Allow cross-origin resources (e.g. pygame CDN) to load under COEP
+        newHeaders.set("Cross-Origin-Resource-Policy", "cross-origin");
         return new Response(response.body, {
           status: response.status,
           statusText: response.statusText,

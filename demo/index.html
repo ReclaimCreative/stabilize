@@ -1,9 +1,13 @@
 <script>
   /* Register coi-serviceworker so SharedArrayBuffer works on GitHub Pages */
-  if (!self.crossOriginIsolated) {
+  if (!crossOriginIsolated) {
     navigator.serviceWorker.register("coi-serviceworker.js").then(function (reg) {
       reg.addEventListener("updatefound", function () { window.location.reload(); });
       if (reg.active && !navigator.serviceWorker.controller) { window.location.reload(); }
+    });
+    /* Key fix: reload as soon as the SW claims this page and takes control */
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      window.location.reload();
     });
   }
 </script>
