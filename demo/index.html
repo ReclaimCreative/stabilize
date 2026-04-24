@@ -6,35 +6,187 @@
   <title>Reclaim Creative — Sensor Visualizer</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { width: 100%; height: 100%; overflow: hidden; background: #0f0f19; }
-    canvas { display: block; cursor: crosshair; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #0f0f19;
+                 display: flex; flex-direction: column; font-family: Arial, sans-serif; }
+
+    #main { display: block; cursor: crosshair; flex: 1; min-height: 0; }
+
+    /* ── Control panel ───────────────────────────────────────────────────────── */
+    #controls {
+      flex-shrink: 0;
+      height: 96px;
+      background: #0a0a12;
+      border-top: 1px solid #22252d;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 0;
+      color: #9a9a9a;
+      font-size: 11px;
+      user-select: none;
+    }
+
+    .ctrl-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 7px;
+      padding: 0 22px;
+      border-right: 1px solid #22252d;
+      height: 100%;
+    }
+    .ctrl-block:first-child { padding-left: 4px; }
+    .ctrl-block.coeff       { border-right: none; }
+
+    .ctrl-title {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #404050;
+      margin-bottom: 1px;
+    }
+
+    .ctrl-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .ctrl-row .lbl  { width: 70px; color: #666; }
+    .ctrl-row input[type=range] {
+      width: 120px;
+      accent-color: #d4924a;
+      cursor: pointer;
+      height: 3px;
+    }
+    .ctrl-row .val {
+      width: 56px;
+      text-align: right;
+      color: #e8e4de;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Coefficients */
+    .coeff-grid {
+      display: grid;
+      grid-template-columns: auto auto auto;
+      gap: 4px 18px;
+      align-items: center;
+    }
+    .coeff-item { color: #666; font-size: 11px; white-space: nowrap; }
+    .coeff-item .v { color: #d4924a; font-variant-numeric: tabular-nums; }
+    .coeff-note {
+      grid-column: 1 / -1;
+      font-size: 9.5px;
+      color: #404050;
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
 <canvas id="main"></canvas>
+
+<div id="controls">
+
+  <!-- ── Tremor ── -->
+  <div class="ctrl-block">
+    <div class="ctrl-title">Tremor</div>
+    <div class="ctrl-row">
+      <span class="lbl">Frequency</span>
+      <input type="range" id="sTF" min="1" max="15" step="0.5" value="5">
+      <span class="val"><span id="vTF">5.0</span> Hz</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="lbl">Amplitude</span>
+      <input type="range" id="sTA" min="1" max="50" step="1" value="20">
+      <span class="val"><span id="vTA">20</span> mm</span>
+    </div>
+  </div>
+
+  <!-- ── Filter bands ── -->
+  <div class="ctrl-block">
+    <div class="ctrl-title">Filter Bands &nbsp;<span style="color:#404050;font-size:9px;letter-spacing:0">(−3 dB / −20 dB)</span></div>
+    <div class="ctrl-row">
+      <span class="lbl">Passband</span>
+      <input type="range" id="sFP" min="0.3" max="12" step="0.1" value="2.7">
+      <span class="val"><span id="vFP">2.7</span> Hz</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="lbl">Stopband</span>
+      <input type="range" id="sFS" min="1" max="29" step="0.5" value="18">
+      <span class="val"><span id="vFS">18.0</span> Hz</span>
+    </div>
+  </div>
+
+  <!-- ── Coefficients ── -->
+  <div class="ctrl-block coeff">
+    <div class="ctrl-title">IIR Coefficients &nbsp;<span style="color:#404050;font-size:9px;letter-spacing:0">Direct Form II</span></div>
+    <div class="coeff-grid">
+      <span class="coeff-item">b&#8320; = <span class="v" id="cb0">0.1220</span></span>
+      <span class="coeff-item">b&#8321; = <span class="v" id="cb1">0.1220</span></span>
+      <span class="coeff-item">a&#8321; = <span class="v" id="ca1">&#x2212;0.7561</span></span>
+      <span class="coeff-note">H(z) &nbsp;=&nbsp; b&#8320;(1 + z&#8315;&#185;) &nbsp;/&nbsp; (1 &minus; a&#8321; z&#8315;&#185;) &nbsp;&nbsp;&nbsp; DC gain &#x2248; 1</span>
+    </div>
+  </div>
+
+</div><!-- #controls -->
+
 <script>
-// ── Physical constants (match config.py exactly) ───────────────────────────────
-const BASELINE   = 18 * 25.4;          // 457.2 mm  (18 inches)
-const SURF_W     = 500;                 // mm
-const SURF_D     = 500;                 // mm
-const MARGIN     = (SURF_W - BASELINE) / 2;
-const SX0        = -MARGIN;
-const SX1        = BASELINE + MARGIN;
-const SY0        = 0;
-const SY1        = SURF_D;
-const SENSOR_A   = [0, 0];
-const SENSOR_B   = [BASELINE, 0];
-const NOISE_MM   = 4.0;
-const TRAIL_LEN  = 80;
-const FPS        = 60;
-const TREMOR_HZ  = 5.0;
-const TREMOR_AMP = 20.0;
-const GRID_N     = 5;
+// ── Physical constants ────────────────────────────────────────────────────────
+const BASELINE  = 18 * 25.4;       // 457.2 mm
+const SURF_W    = 500;
+const SURF_D    = 500;
+const MARGIN    = (SURF_W - BASELINE) / 2;
+const SX0 = -MARGIN, SX1 = BASELINE + MARGIN, SY0 = 0, SY1 = SURF_D;
+const SENSOR_A  = [0, 0];
+const SENSOR_B  = [BASELINE, 0];
+const NOISE_MM  = 4.0;
+const TRAIL_LEN = 80;
+const FPS       = 60;
+const GRID_N    = 5;
 
-// IIR filter  H(z) = 0.122*(1+z⁻¹)/(1−0.7561*z⁻¹)   (ported from Simulink)
-const FA1 = -0.7561, FB0 = 0.122, FB1 = 0.122;
+// ── Mutable params (sliders) ──────────────────────────────────────────────────
+let TREMOR_HZ  = 5.0;
+let TREMOR_AMP = 20.0;
+let FB0, FB1, FA1;   // filter coefficients — set by designFilter()
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ── Filter design (1st-order Butterworth via bilinear transform) ──────────────
+function designFilter(fc) {
+  const wc = 2 * Math.PI * fc;
+  FB0 = FB1 = wc / (2 * FPS + wc);
+  FA1 = -(2 * FPS - wc) / (2 * FPS + wc);
+  filtX.ok = filtY.ok = false;           // reset filter state on coefficient change
+  document.getElementById('cb0').textContent = FB0.toFixed(4);
+  document.getElementById('cb1').textContent = FB1.toFixed(4);
+  const sign = FA1 < 0 ? '\u2212' : '';
+  document.getElementById('ca1').textContent = sign + Math.abs(FA1).toFixed(4);
+}
+
+function filterMag(f, fc) {
+  // |H(e^jω)| at frequency f Hz given cutoff fc Hz
+  const wc  = 2 * Math.PI * fc;
+  const b   = wc / (2 * FPS + wc);
+  const a1  = -(2 * FPS - wc) / (2 * FPS + wc);
+  const om  = 2 * Math.PI * f / FPS;
+  return b * Math.sqrt(2 + 2 * Math.cos(om)) /
+         Math.sqrt(1 + a1*a1 + 2*a1*Math.cos(om));
+}
+
+function stopbandFrom(fc) {
+  // Find the −20 dB frequency for a given passband cutoff
+  for (let f = Math.max(fc + 0.1, 0.2); f < FPS / 2 - 0.1; f += 0.05)
+    if (filterMag(f, fc) <= 0.1) return parseFloat(f.toFixed(1));
+  return parseFloat((FPS / 2).toFixed(1));
+}
+
+function cutoffFromStopband(fstop) {
+  // Reverse: find passband cutoff that places the −20 dB point at fstop
+  for (let fc = 0.1; fc < fstop; fc += 0.05)
+    if (stopbandFrom(fc) <= fstop) return parseFloat(fc.toFixed(1));
+  return 0.1;
+}
+
+// ── Simulation / filter state ─────────────────────────────────────────────────
 let mouseMode  = true;
 let filterMode = true;
 let tremorMode = false;
@@ -43,375 +195,269 @@ let simT       = 0;
 let trail      = [];
 let lastPlot   = null;
 let lmbHeld    = false;
-let drawMode   = 1;        // 1 = tremor/raw  2 = filtered
+let drawMode   = 1;           // 1 = tremor/raw   2 = filtered
 let lastRawDraw  = null;
 let lastFiltDraw = null;
-let filtX      = { v: 0, ok: false };
-let filtY      = { v: 0, ok: false };
-let mouseW     = [BASELINE / 2, SURF_D / 2];
+let filtX = { v: 0, ok: false };
+let filtY = { v: 0, ok: false };
+let mouseW = [BASELINE / 2, SURF_D / 2];
 
-// ── Canvas setup ──────────────────────────────────────────────────────────────
+// ── Canvas ────────────────────────────────────────────────────────────────────
 const canvas  = document.getElementById('main');
 const ctx     = canvas.getContext('2d');
-const drawBuf = document.createElement('canvas'); // offscreen persistent drawing layer
+const drawBuf = document.createElement('canvas');
 const dctx    = drawBuf.getContext('2d');
 let W, H, SC, OX, OY;
 
 function resize() {
-  W = window.innerWidth;
-  H = window.innerHeight;
+  W = canvas.clientWidth  || window.innerWidth;
+  H = canvas.clientHeight || (window.innerHeight - 96);
   canvas.width = drawBuf.width  = W;
   canvas.height = drawBuf.height = H;
-  const PAD  = Math.max(60, Math.min(100, W * 0.08));
+  const PAD = Math.max(55, Math.min(100, W * 0.075));
   SC = Math.min((W - 2*PAD) / (SX1 - SX0 + 80),
                 (H - 2*PAD) / (SURF_D   + 80));
   OX = PAD + (-SX0 * SC);
-  OY = PAD + 30;
+  OY = PAD + 28;
 }
 window.addEventListener('resize', resize);
-resize();
 
 const w2s = (wx, wy) => [OX + wx * SC, OY + wy * SC];
 const s2w = (sx, sy) => [(sx - OX) / SC, (sy - OY) / SC];
 
-// ── Math ──────────────────────────────────────────────────────────────────────
-function gauss(std) {
-  // Box-Muller transform
-  return std * Math.sqrt(-2 * Math.log(Math.random()))
-             * Math.cos(2 * Math.PI * Math.random());
+// ── Math helpers ──────────────────────────────────────────────────────────────
+function gauss(s) {
+  return s * Math.sqrt(-2*Math.log(Math.random())) * Math.cos(2*Math.PI*Math.random());
 }
-
 function triangulate(dA, dB) {
-  // Law of cosines: sensor A at origin, B at (BASELINE, 0)
   const c = BASELINE;
-  if (dA <= 0 || dB <= 0 || dA + dB < c || Math.abs(dA - dB) > c) return null;
-  const cos = Math.max(-1, Math.min(1, (dA*dA + c*c - dB*dB) / (2*dA*c)));
-  const a   = Math.acos(cos);
-  return [dA * Math.cos(a), dA * Math.sin(a)];
+  if (dA<=0||dB<=0||dA+dB<c||Math.abs(dA-dB)>c) return null;
+  const a = Math.acos(Math.max(-1,Math.min(1,(dA*dA+c*c-dB*dB)/(2*dA*c))));
+  return [dA*Math.cos(a), dA*Math.sin(a)];
 }
-
 function filterStep(f, u) {
-  // Direct Form II IIR
-  const v = u - FA1 * f.v;
-  const y = FB0 * v + FB1 * f.v;
-  f.v = v;
-  return y;
+  const v = u - FA1*f.v;
+  const y = FB0*v + FB1*f.v;
+  f.v = v; return y;
 }
-
 function simStep() {
-  // Lissajous path across the detection surface
-  const cx = (SX0 + SX1) / 2,  cy = (SY0 + SY1) / 2;
-  const rx = SURF_W / 2 * 0.75, ry = SURF_D  / 2 * 0.75;
-  const x  = cx + rx * Math.sin(3 * simT + Math.PI / 4);
-  const y  = cy + ry * Math.sin(2 * simT);
-  simT += 0.012;
-  return [x, y];
+  const cx=(SX0+SX1)/2, cy=(SY0+SY1)/2, rx=SURF_W/2*0.75, ry=SURF_D/2*0.75;
+  const x=cx+rx*Math.sin(3*simT+Math.PI/4), y=cy+ry*Math.sin(2*simT);
+  simT+=0.012; return [x,y];
 }
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const C = {
-  bg:    '#0f0f19',  surf:  '#1e2332',  edge:  '#3c465a',
-  grid:  'rgba(40,48,65,0.8)',
-  sA:    '#50b4ff',  sB:    '#ffa028',
-  true:  '#64dc64',  trig:  '#ff5a46',  raw:   '#8c3228',
-  arcA:  'rgba(40,90,130,0.55)',  arcB:  'rgba(130,80,20,0.55)',
-  hud:      '#bebebe',  dim:   '#373750',  label: '#7882a0',
-  drawRaw:  'rgba(255,100,40,0.9)',   // tremor draw — warm orange
-  drawFilt: 'rgba(60,210,255,0.9)',   // filtered draw — cyan
-  plot:     'rgba(80,220,255,0.75)',
+  bg:'#0f0f19', surf:'#1e2332', edge:'#3c465a', grid:'rgba(40,48,65,0.8)',
+  sA:'#50b4ff', sB:'#ffa028', true:'#64dc64', trig:'#ff5a46', raw:'#8c3228',
+  arcA:'rgba(40,90,130,0.55)', arcB:'rgba(130,80,20,0.55)',
+  hud:'#bebebe', dim:'#373750', label:'#7882a0',
+  drawRaw:'rgba(255,100,40,0.9)', drawFilt:'rgba(60,210,255,0.9)',
+  plot:'rgba(80,220,255,0.75)',
 };
-const TRIG_RGB = [255, 90, 70];
-const BG_RGB   = [15,  15, 25];
+const TRIG_RGB=[255,90,70], BG_RGB=[15,15,25];
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render(truePos, rawPos, filtPos, dA, dB) {
-  // Background
-  ctx.fillStyle = C.bg;
-  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
 
-  // Detection surface
-  const [sx0, sy0] = w2s(SX0, SY0);
-  const [sx1, sy1] = w2s(SX1, SY1);
-  ctx.fillStyle = C.surf;
-  ctx.fillRect(sx0, sy0, sx1-sx0, sy1-sy0);
-
-  ctx.strokeStyle = C.grid;  ctx.lineWidth = 1;
-  for (let i = 1; i < GRID_N; i++) {
-    const [x0,y0] = w2s(SX0 + i*SURF_W/GRID_N, SY0);
-    const [x1,y1] = w2s(SX0 + i*SURF_W/GRID_N, SY1);
-    ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
-    const [x2,y2] = w2s(SX0, SY0 + i*SURF_D/GRID_N);
-    const [x3,y3] = w2s(SX1, SY0 + i*SURF_D/GRID_N);
-    ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x3,y3); ctx.stroke();
+  // Surface + grid
+  const[sx0,sy0]=w2s(SX0,SY0),[sx1,sy1]=w2s(SX1,SY1);
+  ctx.fillStyle=C.surf; ctx.fillRect(sx0,sy0,sx1-sx0,sy1-sy0);
+  ctx.strokeStyle=C.grid; ctx.lineWidth=1;
+  for(let i=1;i<GRID_N;i++){
+    let[a,b]=w2s(SX0+i*SURF_W/GRID_N,SY0),[c,d]=w2s(SX0+i*SURF_W/GRID_N,SY1);
+    ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();
+    [a,b]=w2s(SX0,SY0+i*SURF_D/GRID_N);[c,d]=w2s(SX1,SY0+i*SURF_D/GRID_N);
+    ctx.beginPath();ctx.moveTo(a,b);ctx.lineTo(c,d);ctx.stroke();
   }
-  ctx.strokeStyle = C.edge;  ctx.lineWidth = 2;
-  ctx.strokeRect(sx0, sy0, sx1-sx0, sy1-sy0);
-  ctx.fillStyle = C.label; ctx.font = '12px monospace'; ctx.textAlign = 'left';
-  ctx.fillText('500 mm × 500 mm detection surface', sx0+6, sy0+18);
+  ctx.strokeStyle=C.edge;ctx.lineWidth=2;ctx.strokeRect(sx0,sy0,sx1-sx0,sy1-sy0);
+  ctx.fillStyle=C.label;ctx.font='12px monospace';ctx.textAlign='left';
+  ctx.fillText('500 mm × 500 mm detection surface',sx0+6,sy0+18);
 
-  // Persistent drawing layer (composited before sensor elements)
-  ctx.drawImage(drawBuf, 0, 0);
+  // Drawing layer (before sensor elements so sensors render on top)
+  ctx.drawImage(drawBuf,0,0);
 
   // Baseline
-  const [ax, ay] = w2s(...SENSOR_A);
-  const [bx, by] = w2s(...SENSOR_B);
-  ctx.strokeStyle = C.dim; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
-  const [mx, my] = w2s(BASELINE/2, 0);
-  ctx.fillStyle = C.dim; ctx.textAlign = 'center';
-  ctx.fillText(`baseline  ${BASELINE.toFixed(1)} mm  (18")`, mx, my-8);
+  const[ax,ay]=w2s(...SENSOR_A),[bx,by]=w2s(...SENSOR_B);
+  ctx.strokeStyle=C.dim;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();
+  const[mx,my]=w2s(BASELINE/2,0);
+  ctx.fillStyle=C.dim;ctx.textAlign='center';
+  ctx.fillText(`baseline  ${BASELINE.toFixed(1)} mm  (18")`,mx,my-8);
 
   // Range arcs
-  for (const [[px,py], d, color] of [
-    [w2s(...SENSOR_A), dA, C.arcA],
-    [w2s(...SENSOR_B), dB, C.arcB],
-  ]) {
-    const r = Math.abs(d) * SC;
-    if (r >= 3 && r <= 4000) {
-      ctx.beginPath(); ctx.arc(px, py, r, Math.PI, 2*Math.PI);
-      ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
+  for(const[[px,py],d,col]of[[w2s(...SENSOR_A),dA,C.arcA],[w2s(...SENSOR_B),dB,C.arcB]]){
+    const r=Math.abs(d)*SC;
+    if(r>=3&&r<=4000){ctx.beginPath();ctx.arc(px,py,r,Math.PI,2*Math.PI);ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();}
+  }
+
+  // Trail + lines to display position
+  const disp=(filtPos&&filterMode)?filtPos:rawPos;
+  if(disp){
+    trail.push([...disp]);if(trail.length>TRAIL_LEN)trail.shift();
+    const n=trail.length;
+    for(let i=0;i<n;i++){
+      const t=i/(n-1),r=Math.max(1,Math.round(5*t));
+      const[tp,tq]=w2s(...trail[i]);
+      ctx.beginPath();ctx.arc(tp,tq,r,0,Math.PI*2);
+      ctx.fillStyle=`rgb(${Math.round(BG_RGB[0]+(TRIG_RGB[0]-BG_RGB[0])*t)},${Math.round(BG_RGB[1]+(TRIG_RGB[1]-BG_RGB[1])*t)},${Math.round(BG_RGB[2]+(TRIG_RGB[2]-BG_RGB[2])*t)})`;
+      ctx.fill();
     }
+    const[dx,dy]=w2s(...disp);
+    ctx.strokeStyle=C.sA;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(dx,dy);ctx.stroke();
+    ctx.strokeStyle=C.sB;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(dx,dy);ctx.stroke();
   }
 
-  // Trail and lines to display position
-  const dispPos = (filtPos && filterMode) ? filtPos : rawPos;
-  if (dispPos) {
-    trail.push([...dispPos]);
-    if (trail.length > TRAIL_LEN) trail.shift();
-    const n = trail.length;
-    for (let i = 0; i < n; i++) {
-      const t  = i / (n - 1);
-      const r  = Math.max(1, Math.round(5 * t));
-      const cr = Math.round(BG_RGB[0] + (TRIG_RGB[0]-BG_RGB[0]) * t);
-      const cg = Math.round(BG_RGB[1] + (TRIG_RGB[1]-BG_RGB[1]) * t);
-      const cb = Math.round(BG_RGB[2] + (TRIG_RGB[2]-BG_RGB[2]) * t);
-      const [tp, tq] = w2s(...trail[i]);
-      ctx.beginPath(); ctx.arc(tp, tq, r, 0, Math.PI*2);
-      ctx.fillStyle = `rgb(${cr},${cg},${cb})`; ctx.fill();
-    }
-    const [dx, dy] = w2s(...dispPos);
-    ctx.strokeStyle = C.sA; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(dx,dy); ctx.stroke();
-    ctx.strokeStyle = C.sB;
-    ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(dx,dy); ctx.stroke();
+  // Dots
+  if(rawPos&&filterMode){const[rx,ry]=w2s(...rawPos);ctx.beginPath();ctx.arc(rx,ry,5,0,Math.PI*2);ctx.fillStyle=C.raw;ctx.fill();}
+  const mp=(filtPos&&filterMode)?filtPos:rawPos;
+  if(mp){const[px,py]=w2s(...mp);ctx.beginPath();ctx.arc(px,py,9,0,Math.PI*2);ctx.fillStyle=C.trig;ctx.fill();ctx.strokeStyle='white';ctx.lineWidth=2;ctx.stroke();}
+  if(truePos){const[tx,ty]=w2s(...truePos);ctx.beginPath();ctx.arc(tx,ty,5,0,Math.PI*2);ctx.fillStyle=C.true;ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.55)';ctx.lineWidth=1;ctx.stroke();}
+
+  // Sensors (always on top)
+  for(const[lbl,pos,col]of[['A  (I2C1)',SENSOR_A,C.sA],['B  (I2C2)',SENSOR_B,C.sB]]){
+    const[sx,sy]=w2s(...pos);
+    ctx.beginPath();ctx.arc(sx,sy,10,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=col;ctx.font='12px monospace';ctx.textAlign='center';ctx.fillText(lbl,sx,sy-14);
   }
 
-  // Raw dot (dim, shown when filter is active to visualise noise)
-  if (rawPos && filterMode) {
-    const [rx,ry] = w2s(...rawPos);
-    ctx.beginPath(); ctx.arc(rx,ry,5,0,Math.PI*2);
-    ctx.fillStyle = C.raw; ctx.fill();
-  }
+  // ── HUD ──────────────────────────────────────────────────────────────────
+  let hy=18;ctx.textAlign='left';ctx.font='14px monospace';
+  const row=(t,col=C.hud)=>{ctx.fillStyle=col;ctx.fillText(t,14,hy);hy+=20;};
+  row(mouseMode?'MOUSE MODE':'SIM MODE',mouseMode?'#c896ff':'#64dc64');
+  if(tremorMode)row(`TREMOR  ${TREMOR_HZ.toFixed(1)} Hz  \xb1${TREMOR_AMP} mm`,'#ff7828');
+  row(drawMode===1?'DRAW: TREMOR  [1]':'DRAW: FILTERED [2]',drawMode===1?C.drawRaw:C.drawFilt);
+  hy+=4;
+  row(`d_A  ${dA.toFixed(1).padStart(8)} mm`,C.sA);
+  row(`d_B  ${dB.toFixed(1).padStart(8)} mm`,C.sB);
+  hy+=4;
+  if(rawPos){row('--- raw ---','#787878');row(`X  ${(rawPos[0]-SX0).toFixed(1).padStart(8)} mm`,C.raw);row(`Y  ${(rawPos[1]-SY0).toFixed(1).padStart(8)} mm`,C.raw);}
+  if(filtPos&&filterMode){row('--- filtered ---','#787878');row(`X  ${(filtPos[0]-SX0).toFixed(1).padStart(8)} mm`,C.trig);row(`Y  ${(filtPos[1]-SY0).toFixed(1).padStart(8)} mm`,C.trig);}
+  if(!rawPos)row('out of range','#ff5050');
 
-  // Main position dot (filtered or raw)
-  const mainPos = (filtPos && filterMode) ? filtPos : rawPos;
-  if (mainPos) {
-    const [px,py] = w2s(...mainPos);
-    ctx.beginPath(); ctx.arc(px,py,9,0,Math.PI*2);
-    ctx.fillStyle = C.trig; ctx.fill();
-    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+  // ── Legend ────────────────────────────────────────────────────────────────
+  const lx=W-212;let ly=18;ctx.font='12px monospace';
+  for(const[col,lbl]of[[C.true,'True position'],[C.trig,'Filtered position'],[C.raw,'Raw triangulated'],[C.sA,'Sensor A arc'],[C.sB,'Sensor B arc'],[C.drawRaw,'Tremor draw  [1]+LMB'],[C.drawFilt,'Filtered draw [2]+LMB'],['#50dcff','Auto-plot (P)'],]){
+    ctx.beginPath();ctx.arc(lx+6,ly+5,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+    ctx.fillStyle=C.hud;ctx.textAlign='left';ctx.fillText(lbl,lx+18,ly+10);ly+=18;
   }
-
-  // True position dot
-  if (truePos) {
-    const [tx,ty] = w2s(...truePos);
-    ctx.beginPath(); ctx.arc(tx,ty,5,0,Math.PI*2);
-    ctx.fillStyle = C.true; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1; ctx.stroke();
-  }
-
-  // Sensors (drawn last — always on top)
-  for (const [label, pos, color] of [
-    ['A  (I2C1)', SENSOR_A, C.sA],
-    ['B  (I2C2)', SENSOR_B, C.sB],
-  ]) {
-    const [sx, sy] = w2s(...pos);
-    ctx.beginPath(); ctx.arc(sx,sy,10,0,Math.PI*2);
-    ctx.fillStyle = color; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = color; ctx.font = '12px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(label, sx, sy-14);
-  }
-
-  // ── HUD (top-left) ─────────────────────────────────────────────────────────
-  let hy = 18;
-  ctx.textAlign = 'left'; ctx.font = '14px monospace';
-  const row = (text, color=C.hud) => { ctx.fillStyle=color; ctx.fillText(text,14,hy); hy+=20; };
-
-  row(mouseMode ? 'MOUSE MODE' : 'SIM MODE', mouseMode ? '#c896ff' : '#64dc64');
-  if (tremorMode) row(`TREMOR  ${TREMOR_HZ}Hz  ±${TREMOR_AMP}mm`, '#ff7828');
-  row(drawMode === 1 ? 'DRAW: TREMOR  [1]' : 'DRAW: FILTERED [2]',
-      drawMode === 1 ? C.drawRaw : C.drawFilt);
-  hy += 4;
-  row(`d_A  ${dA.toFixed(1).padStart(8)} mm`, C.sA);
-  row(`d_B  ${dB.toFixed(1).padStart(8)} mm`, C.sB);
-  hy += 4;
-  if (rawPos) {
-    row('--- raw ---', '#787878');
-    row(`X  ${(rawPos[0]-SX0).toFixed(1).padStart(8)} mm`, C.raw);
-    row(`Y  ${(rawPos[1]-SY0).toFixed(1).padStart(8)} mm`, C.raw);
-  }
-  if (filtPos && filterMode) {
-    row('--- filtered ---', '#787878');
-    row(`X  ${(filtPos[0]-SX0).toFixed(1).padStart(8)} mm`, C.trig);
-    row(`Y  ${(filtPos[1]-SY0).toFixed(1).padStart(8)} mm`, C.trig);
-  }
-  if (!rawPos) row('out of range', '#ff5050');
-
-  // ── Legend (top-right) ─────────────────────────────────────────────────────
-  const lx = W - 210;
-  let ly = 18;
-  ctx.font = '12px monospace';
-  for (const [color, label] of [
-    [C.true,     'True position'],
-    [C.trig,     'Filtered position'],
-    [C.raw,      'Raw triangulated'],
-    [C.sA,       'Sensor A arc'],
-    [C.sB,       'Sensor B arc'],
-    [C.drawRaw,  'Tremor draw  [1]+LMB'],
-    [C.drawFilt, 'Filtered draw [2]+LMB'],
-    ['#50dcff',  'Auto-plot (P)'],
-  ]) {
-    ctx.beginPath(); ctx.arc(lx+6, ly+5, 5, 0, Math.PI*2);
-    ctx.fillStyle = color; ctx.fill();
-    ctx.fillStyle = C.hud; ctx.textAlign = 'left';
-    ctx.fillText(label, lx+18, ly+10);
-    ly += 18;
-  }
-  ly += 6;
-  for (const [key, desc, state] of [
-    ['Tab', 'Mouse / Sim', mouseMode],
-    ['F',   'Filter',      filterMode],
-    ['T',   'Tremor',      tremorMode],
-    ['1',   'Tremor draw', drawMode === 1],
-    ['2',   'Filt draw',   drawMode === 2],
-    ['P',   'Plot path',   autoPlot],
-    ['C',   'Clear',       null],
-  ]) {
-    ctx.fillStyle = '#dcc850'; ctx.fillText(`[${key}]`, lx, ly);
-    const kw = ctx.measureText(`[${key}]`).width;
-    ctx.fillStyle = C.hud; ctx.fillText(` ${desc}`, lx+kw, ly);
-    if (state !== null) {
-      const dw = ctx.measureText(` ${desc}`).width;
-      ctx.fillStyle = state ? '#64dc64' : '#787878';
-      ctx.fillText(state ? ' ON' : ' OFF', lx+kw+dw, ly);
-    }
-    ly += 17;
+  ly+=5;
+  for(const[key,desc,state]of[['Tab','Mouse / Sim',mouseMode],['F','Filter',filterMode],['T','Tremor',tremorMode],['1','Tremor draw',drawMode===1],['2','Filt draw',drawMode===2],['P','Plot path',autoPlot],['C','Clear',null]]){
+    ctx.fillStyle='#dcc850';ctx.fillText(`[${key}]`,lx,ly);
+    const kw=ctx.measureText(`[${key}]`).width;
+    ctx.fillStyle=C.hud;ctx.fillText(` ${desc}`,lx+kw,ly);
+    if(state!==null){const dw=ctx.measureText(` ${desc}`).width;ctx.fillStyle=state?'#64dc64':'#787878';ctx.fillText(state?' ON':' OFF',lx+kw+dw,ly);}
+    ly+=17;
   }
 }
 
 // ── Main loop ─────────────────────────────────────────────────────────────────
-let lastTs = 0;
-function loop(ts) {
+let lastTs=0;
+function loop(ts){
   requestAnimationFrame(loop);
-  if (ts - lastTs < 1000 / FPS) return;
-  lastTs = ts;
+  if(ts-lastTs<1000/FPS)return;
+  lastTs=ts;
 
-  // True position
-  let [tx, ty] = mouseMode ? [...mouseW] : simStep();
+  let[tx,ty]=mouseMode?[...mouseW]:simStep();
+  if(tremorMode){
+    const t=performance.now()/1000,w=2*Math.PI*TREMOR_HZ;
+    tx+=TREMOR_AMP*Math.sin(w*t);ty+=TREMOR_AMP*Math.sin(w*t+Math.PI/3);
+  }
+  const dA=Math.hypot(tx-SENSOR_A[0],ty-SENSOR_A[1])+gauss(NOISE_MM);
+  const dB=Math.hypot(tx-SENSOR_B[0],ty-SENSOR_B[1])+gauss(NOISE_MM);
+  const raw=triangulate(dA,dB);
 
-  // Tremor
-  if (tremorMode) {
-    const t = performance.now() / 1000;
-    const w = 2 * Math.PI * TREMOR_HZ;
-    tx += TREMOR_AMP * Math.sin(w * t);
-    ty += TREMOR_AMP * Math.sin(w * t + Math.PI / 3);
+  // Filter always runs so draw mode 2 works independently of the display toggle
+  let filt=null;
+  if(raw){
+    if(!filtX.ok){filtX.v=raw[0];filtY.v=raw[1];filtX.ok=filtY.ok=true;}
+    filt=[filterStep(filtX,raw[0]),filterStep(filtY,raw[1])];
   }
 
-  // Sensor distances with noise
-  const dA = Math.hypot(tx-SENSOR_A[0], ty-SENSOR_A[1]) + gauss(NOISE_MM);
-  const dB = Math.hypot(tx-SENSOR_B[0], ty-SENSOR_B[1]) + gauss(NOISE_MM);
-
-  // Triangulate
-  const raw = triangulate(dA, dB);
-
-  // Filter — always computed so both draw modes work regardless of filterMode display toggle
-  let filt = null;
-  if (raw) {
-    if (!filtX.ok) {
-      filtX.v = raw[0]; filtY.v = raw[1];
-      filtX.ok = filtY.ok = true;
+  // Draw modes
+  if(lmbHeld){
+    if(drawMode===1&&raw){
+      const cur=w2s(...raw);
+      if(lastRawDraw){dctx.beginPath();dctx.moveTo(lastRawDraw[0],lastRawDraw[1]);dctx.lineTo(cur[0],cur[1]);dctx.strokeStyle=C.drawRaw;dctx.lineWidth=3;dctx.stroke();}
+      lastRawDraw=cur;lastFiltDraw=null;
+    }else if(drawMode===2&&filt){
+      const cur=w2s(...filt);
+      if(lastFiltDraw){dctx.beginPath();dctx.moveTo(lastFiltDraw[0],lastFiltDraw[1]);dctx.lineTo(cur[0],cur[1]);dctx.strokeStyle=C.drawFilt;dctx.lineWidth=3;dctx.stroke();}
+      lastFiltDraw=cur;lastRawDraw=null;
     }
-    filt = [filterStep(filtX, raw[0]), filterStep(filtY, raw[1])];
-  }
+  }else{lastRawDraw=null;lastFiltDraw=null;}
 
-  // Draw mode — LMB traces raw (tremor) or filtered position onto the canvas
-  if (lmbHeld) {
-    if (drawMode === 1 && raw) {
-      const cur = w2s(...raw);
-      if (lastRawDraw) {
-        dctx.beginPath(); dctx.moveTo(lastRawDraw[0],lastRawDraw[1]); dctx.lineTo(cur[0],cur[1]);
-        dctx.strokeStyle = C.drawRaw; dctx.lineWidth = 3; dctx.stroke();
-      }
-      lastRawDraw = cur; lastFiltDraw = null;
-    } else if (drawMode === 2 && filt) {
-      const cur = w2s(...filt);
-      if (lastFiltDraw) {
-        dctx.beginPath(); dctx.moveTo(lastFiltDraw[0],lastFiltDraw[1]); dctx.lineTo(cur[0],cur[1]);
-        dctx.strokeStyle = C.drawFilt; dctx.lineWidth = 3; dctx.stroke();
-      }
-      lastFiltDraw = cur; lastRawDraw = null;
-    }
-  } else {
-    lastRawDraw = null; lastFiltDraw = null;
-  }
+  // Auto-plot
+  if(autoPlot){
+    const cur=w2s(tx,ty);
+    if(lastPlot){dctx.beginPath();dctx.moveTo(lastPlot[0],lastPlot[1]);dctx.lineTo(cur[0],cur[1]);dctx.strokeStyle=C.plot;dctx.lineWidth=2;dctx.stroke();}
+    lastPlot=cur;
+  }else{lastPlot=null;}
 
-  // Auto-plot to persistent drawing buffer
-  if (autoPlot) {
-    const cur = w2s(tx, ty);
-    if (lastPlot) {
-      dctx.beginPath(); dctx.moveTo(lastPlot[0],lastPlot[1]); dctx.lineTo(cur[0],cur[1]);
-      dctx.strokeStyle = C.plot; dctx.lineWidth = 2; dctx.stroke();
-    }
-    lastPlot = cur;
-  } else {
-    lastPlot = null;
-  }
-
-  render([tx,ty], raw, filt, dA, dB);
+  render([tx,ty],raw,filt,dA,dB);
 }
 
-// ── Input ─────────────────────────────────────────────────────────────────────
-canvas.addEventListener('mousemove', e => {
-  const r = canvas.getBoundingClientRect();
-  mouseW = s2w(e.clientX - r.left, e.clientY - r.top);
+// ── Mouse / keyboard input ────────────────────────────────────────────────────
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  mouseW=s2w(e.clientX-r.left,e.clientY-r.top);
 });
+canvas.addEventListener('mousedown',()=>{lmbHeld=true;});
+canvas.addEventListener('mouseup',()=>{lmbHeld=false;lastRawDraw=null;lastFiltDraw=null;});
+canvas.addEventListener('mouseleave',()=>{lmbHeld=false;lastRawDraw=null;lastFiltDraw=null;});
 
-canvas.addEventListener('mousedown', () => { lmbHeld = true; });
-canvas.addEventListener('mouseup',    () => { lmbHeld = false; lastRawDraw = null; lastFiltDraw = null; });
-canvas.addEventListener('mouseleave', () => { lmbHeld = false; lastRawDraw = null; lastFiltDraw = null; });
-
-document.addEventListener('keydown', e => {
-  switch (e.key) {
-    case 'Tab':
-      e.preventDefault();
-      mouseMode = !mouseMode;
-      simT = 0; trail = [];
-      filtX.ok = filtY.ok = false;
-      break;
-    case 'f': case 'F':
-      filterMode = !filterMode;
-      filtX.ok = filtY.ok = false;
-      break;
-    case 't': case 'T':
-      tremorMode = !tremorMode;
-      break;
-    case 'p': case 'P':
-      autoPlot = !autoPlot;
-      lastPlot = null;
-      break;
-    case '1':
-      drawMode = 1; lastRawDraw = null; lastFiltDraw = null;
-      break;
-    case '2':
-      drawMode = 2; lastRawDraw = null; lastFiltDraw = null;
-      break;
-    case 'c': case 'C':
-      dctx.clearRect(0, 0, W, H);
-      break;
+document.addEventListener('keydown',e=>{
+  switch(e.key){
+    case'Tab':e.preventDefault();mouseMode=!mouseMode;simT=0;trail=[];filtX.ok=filtY.ok=false;break;
+    case'f':case'F':filterMode=!filterMode;filtX.ok=filtY.ok=false;break;
+    case't':case'T':tremorMode=!tremorMode;break;
+    case'1':drawMode=1;lastRawDraw=null;lastFiltDraw=null;break;
+    case'2':drawMode=2;lastRawDraw=null;lastFiltDraw=null;break;
+    case'p':case'P':autoPlot=!autoPlot;lastPlot=null;break;
+    case'c':case'C':dctx.clearRect(0,0,W,H);break;
   }
 });
 
+// ── Slider logic ──────────────────────────────────────────────────────────────
+let _busy=false;
+
+function applyPassband(fc){
+  if(_busy)return; _busy=true;
+  const fs=stopbandFrom(fc);
+  document.getElementById('sFP').value=fc;
+  document.getElementById('sFS').value=Math.min(fs,parseFloat(document.getElementById('sFS').max));
+  document.getElementById('vFP').textContent=parseFloat(fc).toFixed(1);
+  document.getElementById('vFS').textContent=fs.toFixed(1);
+  designFilter(fc);
+  _busy=false;
+}
+
+function applyStopband(fs){
+  if(_busy)return; _busy=true;
+  const fc=cutoffFromStopband(fs);
+  document.getElementById('sFP').value=fc;
+  document.getElementById('vFP').textContent=fc.toFixed(1);
+  document.getElementById('vFS').textContent=parseFloat(fs).toFixed(1);
+  designFilter(fc);
+  _busy=false;
+}
+
+document.getElementById('sTF').addEventListener('input',e=>{
+  TREMOR_HZ=parseFloat(e.target.value);
+  document.getElementById('vTF').textContent=TREMOR_HZ.toFixed(1);
+});
+document.getElementById('sTA').addEventListener('input',e=>{
+  TREMOR_AMP=parseFloat(e.target.value);
+  document.getElementById('vTA').textContent=TREMOR_AMP.toFixed(0);
+});
+document.getElementById('sFP').addEventListener('input',e=>applyPassband(parseFloat(e.target.value)));
+document.getElementById('sFS').addEventListener('input',e=>applyStopband(parseFloat(e.target.value)));
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+applyPassband(2.7);   // seeds coefficients, stopband display, and slider positions
+resize();
 requestAnimationFrame(loop);
 </script>
 </body>
