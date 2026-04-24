@@ -108,7 +108,7 @@
     <div class="ctrl-title">Filter Bands &nbsp;<span style="color:#404050;font-size:9px;letter-spacing:0">(−3 dB / −20 dB)</span></div>
     <div class="ctrl-row">
       <span class="lbl">Passband</span>
-      <input type="range" id="sFP" min="0.3" max="12" step="0.1" value="2.7">
+      <input type="range" id="sFP" min="0.3" max="12" step="0.001" value="2.654">
       <span class="val"><span id="vFP">2.7</span> Hz</span>
     </div>
     <div class="ctrl-row">
@@ -456,7 +456,7 @@ document.getElementById('sFP').addEventListener('input',e=>applyPassband(parseFl
 document.getElementById('sFS').addEventListener('input',e=>applyStopband(parseFloat(e.target.value)));
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-applyPassband(2.7);   // seeds coefficients, stopband display, and slider positions
+applyPassband(2.654); // fc matching Simulink coefficients: b0=b1=0.122, a1=-0.7561
 resize();
 requestAnimationFrame(loop);
 </script>
