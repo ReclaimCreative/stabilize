@@ -326,27 +326,86 @@
       text-align: center;
     }
 
+    .mission-quote {
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.4rem;
+      margin-top: 1.8rem;
+      background: var(--surface2);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .mission-quote p {
+      font-size: 0.92rem !important;
+      color: var(--text) !important;
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 0 !important;
+    }
+
+    .mission-quote cite {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-top: 0.6rem;
+      font-style: normal;
+    }
+
     /* ─── ABOUT ─── */
     #about {
       max-width: 1200px;
       margin: 0 auto;
     }
 
-    .about-placeholder {
-      border: 1px dashed var(--border);
-      border-radius: 4px;
-      padding: 5rem 3rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.9rem;
-      letter-spacing: 0.06em;
-      max-width: 600px;
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+      gap: 2rem;
     }
 
-    .about-placeholder .placeholder-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      opacity: 0.3;
+    .bio-card {
+      display: flex;
+      gap: 1.8rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2rem;
+      align-items: flex-start;
+    }
+
+    .bio-photo {
+      flex-shrink: 0;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent-dim);
+    }
+
+    .bio-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .bio-role {
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .bio-text {
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.72;
+    }
+
+    @media (max-width: 600px) {
+      .bio-card { flex-direction: column; }
     }
 
     /* ─── DESIGN DETAILS ─── */
@@ -529,6 +588,14 @@
         tremor content, and the cleaned signal drives the Cartesian plotter to
         faithfully reproduce the artist's intended motion.
       </p>
+      <div class="mission-quote">
+        <p>
+          The role of artistic expression to human happiness is paramount; our goal is
+          not simply to help people live their lives, but to provide them with more
+          access to the things that make life worth living.
+        </p>
+        <cite>Mission Statement</cite>
+      </div>
     </div>
     <div class="abstract-image-wrap">
       <img src="images/image17.png" alt="Input and Filtered Spiral Overlay" />
@@ -573,13 +640,42 @@
 
 <!-- ─── ABOUT ─── -->
 <section id="about">
-  <div id="about" style="max-width:1200px; margin:0 auto;">
+  <div style="max-width:1200px; margin:0 auto;">
     <div class="section-label">About</div>
     <h2 class="section-title">The Team</h2>
     <div class="divider"></div>
-    <div class="about-placeholder">
-      <div class="placeholder-icon">&#9632;</div>
-      Team bios and project background coming soon.
+    <div style="margin-bottom:3rem;">
+      <img src="images/rc_crew.jpg" alt="Reclaim Creative team"
+           style="width:100%; max-width:900px; border-radius:4px; border:1px solid var(--border); display:block;" />
+    </div>
+    <div class="team-grid">
+      <div class="bio-card">
+        <img class="bio-photo" src="images/will_pic.jpeg" alt="Will Jameson" />
+        <div>
+          <div class="bio-name">Will Jameson</div>
+          <div class="bio-role">Electrical Engineering &mdash; SFSU &rsquo;26</div>
+          <p class="bio-text">
+            Will is a native to the San Francisco Bay Area. In 2009, he received a
+            bachelor&rsquo;s degree in Chinese language and literature from San Francisco
+            State University, after which he pursued a career in hospitality while
+            traveling the world.
+          </p>
+          <p class="bio-text" style="margin-top:0.75rem;">
+            In 2020, Will returned to school after discovering a passion for mathematics
+            and science. At City College of San Francisco he received an associate&rsquo;s
+            degree in Engineering, then transferred to San Francisco State University to
+            study Electrical and Computer Engineering, where he focused on power
+            electronics and embedded systems.
+          </p>
+          <p class="bio-text" style="margin-top:0.75rem;">
+            Reclaim Creative was born from a desire to assist artists whose faculties have
+            been diminished. The mission&mdash;to provide assistive technology that makes
+            life meaningful&mdash;reflects what Will sees as a necessary imperative for
+            engineers. Outside of engineering, Will enjoys creating music and spending
+            time with his family.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -603,6 +699,9 @@
               Five pieces of aluminum V-slot extrusion form the frame. Stationary GT2 belts
               run the length of each rail, contacting the motor shaft wheels for self-tensioning.
               Two NEMA 17 steppers drive the Y-axis gantries; one drives the X-axis carriage.
+              TMC2209 stepper drivers provide overcurrent detection and silent operation.
+              The system achieves <strong>80 steps/mm</strong> positional accuracy with
+              negligible drift over time.
             </div>
           </div>
         </div>
@@ -663,7 +762,10 @@
             <div class="design-card-desc">
               Two VL53L7CX time-of-flight sensors placed a known distance apart on the left
               side of the active field. The law of cosines yields X/Y Cartesian coordinates
-              from the two measured ranges R1 and R2.
+              from the two measured ranges R1 and R2. Each sensor uses a Single-Photon
+              Avalanche Diode (SPAD) array with multi-zone ranging capability. A
+              Nucleo-L476RG microcontroller reads both sensors and transmits filtered
+              coordinates over USART.
             </div>
           </div>
         </div>
@@ -683,6 +785,54 @@
               filter block. The filtered coordinates are then algebraically remapped to
               discrete stepper-motor steps. Sampling occurs at 60 Hz&mdash;well above
               the Nyquist rate for typical tremor frequencies (5&ndash;12 Hz).
+              The pipeline spans three isolated microcontrollers: a <strong>Nucleo-L476RG</strong>
+              handles sensor reading and USART transmission; a <strong>Nucleo-G474RE</strong>
+              runs the Simulink motor-control model; an <strong>Arduino</strong> manages
+              pen-lift logic via hobby servo, fully isolated from the main power tree.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Future Improvements -->
+    <div class="design-group">
+      <div class="design-group-title">Future Improvements</div>
+      <div class="design-grid">
+        <div class="design-card">
+          <div class="design-card-info" style="border-top:none;">
+            <div class="design-card-title">Tunable Filter</div>
+            <div class="design-card-desc">
+              Expose filter cutoff frequency as a user-adjustable parameter to accommodate
+              the full clinical range of tremor (3&ndash;18 Hz) rather than a fixed band.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <div class="design-card-info" style="border-top:none;">
+            <div class="design-card-title">Multi-Input Mode Switching</div>
+            <div class="design-card-desc">
+              Add software mode-switching to accept multiple UART input sources, enabling
+              future sensor or control-surface upgrades without hardware redesign.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <div class="design-card-info" style="border-top:none;">
+            <div class="design-card-title">Gantry Stiffness</div>
+            <div class="design-card-desc">
+              Increase cross-beam rigidity to eliminate racking under rapid direction
+              changes, improving accuracy at higher drawing speeds.
+            </div>
+          </div>
+        </div>
+        <div class="design-card">
+          <div class="design-card-info" style="border-top:none;">
+            <div class="design-card-title">User Feedback LCD</div>
+            <div class="design-card-desc">
+              Integrate a small LCD panel to display system status, filter mode, and
+              sensor signal quality&mdash;reducing reliance on a connected computer
+              during use.
             </div>
           </div>
         </div>
@@ -697,6 +847,18 @@
   <div class="footer-logo">Reclaim Creative</div>
   <div class="footer-meta">Will Jameson &middot; Sam Zimmerickers &middot; ENGR 415-01 &middot; Spring 2026</div>
 </footer>
+
+<!-- ─── EASTER EGG ─── -->
+<div style="text-align:center; padding-bottom:1.2rem;">
+  <a href="galaga/index.html" style="
+    display: inline-block;
+    color: #2c2f38;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: color 0.3s;
+    line-height: 1;
+  " title="" onmouseover="this.style.color='#4c5060'" onmouseout="this.style.color='#2c2f38'">&#128640;</a>
+</div>
 
 </body>
 </html>
