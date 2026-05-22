@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" width="900" height="380" style="background:#1a1c22;">
+
+  <defs>
+    <marker id="ab" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <polygon points="0 0, 7 3.5, 0 7" fill="#50b4ff"/>
+    </marker>
+    <marker id="ao" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <polygon points="0 0, 7 3.5, 0 7" fill="#ffa028"/>
+    </marker>
+    <marker id="aa" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <polygon points="0 0, 7 3.5, 0 7" fill="#d4924a"/>
+    </marker>
+  </defs>
+
+  <!-- ═══ INPUT BLOCK  (right edge x=150) ═══ -->
+  <rect x="30" y="140" width="120" height="100" rx="3" fill="#22252d" stroke="#2c2f38" stroke-width="1.5"/>
+  <text x="90" y="183" font-size="9"  fill="#8a8a8a" font-family="Courier New,monospace" text-anchor="middle">TremorXY.csv</text>
+  <text x="90" y="198" font-size="10" fill="#d4924a" font-family="Courier New,monospace" text-anchor="middle" font-weight="700">TremorXY</text>
+  <!-- port labels (x=172, y=216) -->
+  <text x="144" y="170" font-size="9" fill="#50b4ff" font-family="Courier New,monospace" text-anchor="end">x</text>
+  <text x="144" y="218" font-size="9" fill="#ffa028" font-family="Courier New,monospace" text-anchor="end">y</text>
+
+  <!-- ═══ SIGNAL FILTERING BLOCK  (x=310–510, y=110–270) ═══ -->
+  <rect x="310" y="110" width="200" height="160" rx="3" fill="#22252d" stroke="#2c2f38" stroke-width="1.5"/>
+  <!-- header strip -->
+  <rect x="310" y="110" width="200" height="20" rx="3" fill="#1a1c22" stroke="none"/>
+  <rect x="310" y="122" width="200" height="8"  fill="#1a1c22" stroke="none"/>
+  <text x="410" y="125" font-size="9" fill="#8a8a8a" font-family="Arial,sans-serif" text-anchor="middle" letter-spacing="0.1em">SIGNAL FILTERING</text>
+  <!-- inner FIR wave box -->
+  <rect x="330" y="158" width="160" height="52" rx="2" fill="#1a1c22" stroke="#2c2f38" stroke-width="1"/>
+  <polyline points="338,192 353,172 373,192 393,172 413,192 433,172 453,192 482,192"
+            fill="none" stroke="#50b4ff" stroke-width="1.3" opacity="0.6"/>
+  <!-- port labels — x ports at y=172, y ports at y=216 -->
+  <text x="318" y="170" font-size="9" fill="#50b4ff" font-family="Courier New,monospace">raw_x</text>
+  <text x="318" y="218" font-size="9" fill="#ffa028" font-family="Courier New,monospace">raw_y</text>
+  <text x="502" y="170" font-size="9" fill="#50b4ff" font-family="Courier New,monospace" text-anchor="end">filtered_x</text>
+  <text x="502" y="218" font-size="9" fill="#ffa028" font-family="Courier New,monospace" text-anchor="end">filtered_y</text>
+  <!-- caption below block -->
+  <text x="410" y="290" font-size="10" fill="#8a8a8a" font-family="Arial,sans-serif" text-anchor="middle" letter-spacing="0.06em">Signal Filtering</text>
+
+  <!-- ═══ CARTESIAN→STEPPER BLOCK  (x=630–830, y=110–270) ═══ -->
+  <rect x="630" y="110" width="200" height="160" rx="3" fill="#22252d" stroke="#d4924a" stroke-width="1.5"/>
+  <!-- header strip -->
+  <rect x="630" y="110" width="200" height="20" rx="3" fill="#1a1c22" stroke="none"/>
+  <rect x="630" y="122" width="200" height="8"  fill="#1a1c22" stroke="none"/>
+  <text x="730" y="125" font-size="9" fill="#d4924a" font-family="Arial,sans-serif" text-anchor="middle" letter-spacing="0.1em">CARTESIAN → STEPPER</text>
+  <!-- inner track lines -->
+  <line x1="655" y1="172" x2="805" y2="172" stroke="#d4924a" stroke-width="0.7" opacity="0.2"/>
+  <line x1="655" y1="216" x2="805" y2="216" stroke="#d4924a" stroke-width="0.7" opacity="0.2"/>
+  <!-- port labels -->
+  <text x="638" y="170" font-size="9" fill="#50b4ff" font-family="Courier New,monospace">filtered_x</text>
+  <text x="638" y="218" font-size="9" fill="#ffa028" font-family="Courier New,monospace">filtered_y</text>
+  <text x="822" y="170" font-size="9" fill="#d4924a" font-family="Courier New,monospace" text-anchor="end">stepper_x</text>
+  <text x="822" y="218" font-size="9" fill="#d4924a" font-family="Courier New,monospace" text-anchor="end">stepper_y</text>
+  <!-- caption below block -->
+  <text x="730" y="290" font-size="10" fill="#d4924a" font-family="Arial,sans-serif" text-anchor="middle" letter-spacing="0.06em">Cartesian to Stepper</text>
+
+  <!-- ═══ OUT BLOCKS  (raw) — centered x=275, raw_x top=34 bottom=62, raw_y top=318 ═══ -->
+  <rect x="230" y="34" width="90" height="28" rx="2" fill="#1a1c22" stroke="#2c2f38" stroke-width="1"/>
+  <text x="275" y="52"  font-size="9" fill="#8a8a8a" font-family="Courier New,monospace" text-anchor="middle">out.raw_x</text>
+
+  <rect x="230" y="318" width="90" height="28" rx="2" fill="#1a1c22" stroke="#2c2f38" stroke-width="1"/>
+  <text x="275" y="336" font-size="9" fill="#8a8a8a" font-family="Courier New,monospace" text-anchor="middle">out.raw_y</text>
+
+  <!-- ═══ OUT BLOCKS  (filtered) — centered x=600, top=34/318 ═══ -->
+  <rect x="550" y="34" width="100" height="28" rx="2" fill="#1a1c22" stroke="#2c2f38" stroke-width="1"/>
+  <text x="600" y="52"  font-size="9" fill="#8a8a8a" font-family="Courier New,monospace" text-anchor="middle">out.filtered_x</text>
+
+  <rect x="550" y="318" width="100" height="28" rx="2" fill="#1a1c22" stroke="#2c2f38" stroke-width="1"/>
+  <text x="600" y="336" font-size="9" fill="#8a8a8a" font-family="Courier New,monospace" text-anchor="middle">out.filtered_y</text>
+
+  <!-- ═══ WIRES: X signal (blue) ═══
+       input x port → (150,172) → junction A (275,172)
+       branch A up   → (275,62)  into out.raw_x bottom center
+       branch A right → (310,172) into filter raw_x port          -->
+  <line x1="150" y1="172" x2="275" y2="172" stroke="#50b4ff" stroke-width="1.3"/>
+  <circle cx="275" cy="172" r="3.2" fill="#50b4ff"/>
+  <line x1="275" y1="172" x2="275" y2="62"  stroke="#50b4ff" stroke-width="1.3" marker-end="url(#ab)"/>
+  <line x1="275" y1="172" x2="310" y2="172" stroke="#50b4ff" stroke-width="1.3" marker-end="url(#ab)"/>
+
+  <!-- ═══ WIRES: Y signal (orange) ═══
+       input y port → (150,216) → junction B (275,216)
+       branch B down → (275,318) into out.raw_y top center
+       branch B right → (310,216) into filter raw_y port          -->
+  <line x1="150" y1="216" x2="275" y2="216" stroke="#ffa028" stroke-width="1.3"/>
+  <circle cx="275" cy="216" r="3.2" fill="#ffa028"/>
+  <line x1="275" y1="216" x2="275" y2="318" stroke="#ffa028" stroke-width="1.3" marker-end="url(#ao)"/>
+  <line x1="275" y1="216" x2="310" y2="216" stroke="#ffa028" stroke-width="1.3" marker-end="url(#ao)"/>
+
+  <!-- ═══ WIRES: filtered X (blue) ═══
+       filter filtered_x → (510,172) → junction C (600,172)
+       branch C up    → (600,62)  into out.filtered_x bottom center
+       branch C right → (630,172) into stepper filtered_x port    -->
+  <line x1="510" y1="172" x2="600" y2="172" stroke="#50b4ff" stroke-width="1.3"/>
+  <circle cx="600" cy="172" r="3.2" fill="#50b4ff"/>
+  <line x1="600" y1="172" x2="600" y2="62"  stroke="#50b4ff" stroke-width="1.3" marker-end="url(#ab)"/>
+  <line x1="600" y1="172" x2="630" y2="172" stroke="#50b4ff" stroke-width="1.3" marker-end="url(#ab)"/>
+
+  <!-- ═══ WIRES: filtered Y (orange) ═══
+       filter filtered_y → (510,216) → junction D (600,216)
+       branch D down  → (600,318) into out.filtered_y top center
+       branch D right → (630,216) into stepper filtered_y port    -->
+  <line x1="510" y1="216" x2="600" y2="216" stroke="#ffa028" stroke-width="1.3"/>
+  <circle cx="600" cy="216" r="3.2" fill="#ffa028"/>
+  <line x1="600" y1="216" x2="600" y2="318" stroke="#ffa028" stroke-width="1.3" marker-end="url(#ao)"/>
+  <line x1="600" y1="216" x2="630" y2="216" stroke="#ffa028" stroke-width="1.3" marker-end="url(#ao)"/>
+
+  <!-- ═══ WIRES: stepper outputs (accent) ═══ -->
+  <line x1="830" y1="172" x2="870" y2="172" stroke="#d4924a" stroke-width="1.3" marker-end="url(#aa)"/>
+  <line x1="830" y1="216" x2="870" y2="216" stroke="#d4924a" stroke-width="1.3" marker-end="url(#aa)"/>
+
+</svg>
