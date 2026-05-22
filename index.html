@@ -376,11 +376,11 @@
 
     .bio-photo {
       flex-shrink: 0;
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      object-fit: cover;
+      width: 140px;
+      height: auto;
+      border-radius: 4px;
       border: 2px solid var(--accent-dim);
+      display: block;
     }
 
     .bio-name {
@@ -525,6 +525,95 @@
       letter-spacing: 0.06em;
     }
 
+    /* ─── TECHNICAL ─── */
+    #technical {
+      border-top: 1px solid var(--border);
+    }
+
+    .tech-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tech-group {
+      margin-bottom: 5rem;
+    }
+
+    .tech-group:last-child { margin-bottom: 0; }
+
+    .tech-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .eq-block {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.8rem 2rem;
+    }
+
+    .eq-sublabel {
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.1rem;
+    }
+
+    .eq-line {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 2.1;
+    }
+
+    .eq-line em {
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    .eq-note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-top: 1rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.9rem;
+    }
+
+    .proto-block {
+      background: #090b0e;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.4rem 1.8rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      color: var(--text);
+      line-height: 1.9;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .proto-key  { color: var(--accent); }
+    .proto-cmt  { color: var(--muted); }
+
+    .trig-svg-wrap {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1.4rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    @media (max-width: 800px) {
+      .tech-two-col { grid-template-columns: 1fr; }
+    }
+
     /* ─── RESPONSIVE ─── */
     @media (max-width: 800px) {
       nav { padding: 0 1.5rem; }
@@ -545,6 +634,7 @@
     <li><a href="#demo">Demo</a></li>
     <li><a href="#about">About</a></li>
     <li><a href="#design">Design</a></li>
+    <li><a href="#technical">Technical</a></li>
   </ul>
 </nav>
 
@@ -673,6 +763,37 @@
             life meaningful&mdash;reflects what Will sees as a necessary imperative for
             engineers. Outside of engineering, Will enjoys creating music and spending
             time with his family.
+          </p>
+        </div>
+      </div>
+      <div class="bio-card">
+        <img class="bio-photo" src="images/sam_pic.png" alt="Sam Zimmerickers" />
+        <div>
+          <div class="bio-name">Sam Zimmerickers</div>
+          <div class="bio-role">Electrical Engineering &mdash; SFSU &rsquo;26</div>
+          <p class="bio-text">
+            Sam is originally from the Los Angeles area but has lived in the San Francisco
+            Bay Area since 2005. In 2015, he received an associate&rsquo;s degree in
+            Chemistry from Cabrillo Community College before beginning a career in the live
+            music industry, where he has since worked across large-scale concert and
+            festival production. He currently supervises a significant portion of the labor
+            operations for Outside Lands Music and Arts Festival, helping coordinate the
+            personnel and logistics required to support one of the country&rsquo;s largest
+            music festivals.
+          </p>
+          <p class="bio-text" style="margin-top:0.75rem;">
+            In 2023, Sam returned to school to pursue a Bachelor&rsquo;s Degree in
+            Electrical Engineering at San Francisco State University. His work has focused
+            on embedded systems, motion control, digital signal processing, and
+            human-centered engineering design with a particular interest in building
+            technology that bridges technical precision with creative expression.
+          </p>
+          <p class="bio-text" style="margin-top:0.75rem;">
+            Reclaim Creative is an opportunity to combine those focuses into a project that
+            can do meaningful good in the world. Countless artists throughout history have
+            lost their ability to connect to their medium, and the team is proud to present
+            this step toward making creative expression more accessible to those facing
+            physical limitations.
           </p>
         </div>
       </div>
@@ -836,6 +957,337 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─── TECHNICAL DETAILS ─── -->
+<section id="technical">
+  <div class="tech-inner">
+    <div class="section-label">Technical Details</div>
+    <h2 class="section-title">Mathematics &amp; Implementation</h2>
+    <div class="divider"></div>
+
+    <!-- State Machine -->
+    <div class="tech-group">
+      <div class="design-group-title">Plotter Homing State Machine</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;overflow:hidden;">
+        <svg viewBox="0 0 1000 515" width="100%" style="display:block;">
+          <defs>
+            <marker id="sm-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#d4924a"/>
+            </marker>
+            <marker id="sm-f" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#c06060"/>
+            </marker>
+            <marker id="sm-m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#686868"/>
+            </marker>
+          </defs>
+
+          <rect width="1000" height="515" fill="#0f1014"/>
+
+          <!-- initial dot -->
+          <circle cx="85" cy="42" r="7" fill="#d4924a"/>
+          <line x1="85" y1="49" x2="85" y2="67" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+
+          <!-- ── STATE BOXES ── -->
+          <rect x="15"  y="68"  width="140" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="85"  y="94"  text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#f0eeea">Boot</text>
+
+          <rect x="205" y="68"  width="140" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="275" y="94"  text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#f0eeea">Home_X_Seek</text>
+
+          <rect x="395" y="68"  width="140" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="465" y="94"  text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#f0eeea">Reset_X_Zero</text>
+
+          <rect x="585" y="68"  width="148" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="659" y="94"  text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#f0eeea">Home_X_Backoff</text>
+
+          <rect x="848" y="84"  width="108" height="42" rx="4" fill="#2a1515" stroke="#7a3535" stroke-width="1.5"/>
+          <text x="902" y="110" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#e08080">Fault</text>
+
+          <rect x="15"  y="198" width="140" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="85"  y="224" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#f0eeea">Home_Y_Seek</text>
+
+          <rect x="395" y="198" width="140" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="465" y="224" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#f0eeea">Reset_Y_Zero</text>
+
+          <rect x="585" y="198" width="148" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="659" y="224" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#f0eeea">Home_Y_Backoff</text>
+
+          <rect x="15"  y="328" width="140" height="42" rx="4" fill="#1a1c22" stroke="#8a5c28" stroke-width="1.5"/>
+          <text x="85"  y="354" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#d4924a">Set_Zero</text>
+
+          <rect x="205" y="432" width="120" height="42" rx="4" fill="#152015" stroke="#3a6b3a" stroke-width="1.5"/>
+          <text x="265" y="458" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#80d080">Ready</text>
+
+          <rect x="385" y="432" width="120" height="42" rx="4" fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+          <text x="445" y="458" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#f0eeea">Run_Plot</text>
+
+          <!-- ── HAPPY PATH ── -->
+          <!-- Boot → Home_X_Seek -->
+          <line x1="155" y1="89" x2="203" y2="89" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="179" y="82" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(0.1, sec)]</text>
+
+          <!-- Home_X_Seek → Reset_X_Zero -->
+          <line x1="345" y1="89" x2="393" y2="89" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="369" y="82" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[x_home_switch]</text>
+
+          <!-- Reset_X_Zero → Home_X_Backoff -->
+          <line x1="535" y1="89" x2="583" y2="89" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="559" y="82" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(0.05, sec)]</text>
+
+          <!-- Home_X_Backoff → Home_Y_Seek -->
+          <path d="M 659,110 C 659,163 85,163 85,198" fill="none" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="375" y="157" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(0.5, sec)]</text>
+
+          <!-- Home_Y_Seek → Reset_Y_Zero -->
+          <line x1="155" y1="219" x2="393" y2="219" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="274" y="212" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[y_home_left &amp;&amp; y_home_right]</text>
+
+          <!-- Reset_Y_Zero → Home_Y_Backoff -->
+          <line x1="535" y1="219" x2="583" y2="219" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="559" y="212" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(0.05, sec)]</text>
+
+          <!-- Home_Y_Backoff → Set_Zero -->
+          <path d="M 659,240 C 659,293 85,293 85,328" fill="none" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="375" y="287" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(0.5, sec)]</text>
+
+          <!-- Set_Zero → Ready -->
+          <path d="M 85,370 C 85,422 265,422 265,432" fill="none" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="175" y="416" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(0.05, sec)]</text>
+
+          <!-- Ready → Run_Plot [start_plot] -->
+          <line x1="325" y1="447" x2="383" y2="447" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="354" y="440" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[start_plot]</text>
+
+          <!-- Run_Plot → Ready [plot_done] -->
+          <path d="M 385,463 C 370,490 310,490 325,463" fill="none" stroke="#d4924a" stroke-width="1.5" marker-end="url(#sm-a)"/>
+          <text x="354" y="504" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[plot_done]</text>
+
+          <!-- ── ESTOP → FAULT (dashed red) ── -->
+          <!-- Home_X_Backoff → Fault -->
+          <line x1="733" y1="89" x2="846" y2="102" stroke="#c06060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-f)"/>
+          <text x="793" y="88" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#c06060">[estop]</text>
+
+          <!-- Home_X_Seek → Fault (arc over top) -->
+          <path d="M 275,68 C 275,44 902,44 902,84" fill="none" stroke="#c06060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-f)"/>
+
+          <!-- Home_Y_Seek → Fault -->
+          <path d="M 155,208 C 500,158 848,130 848,126" fill="none" stroke="#c06060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-f)"/>
+          <text x="505" y="150" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#c06060">[estop]</text>
+
+          <!-- Home_Y_Backoff → Fault -->
+          <path d="M 733,208 C 810,175 848,160 848,126" fill="none" stroke="#c06060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-f)"/>
+          <text x="812" y="170" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#c06060">[estop]</text>
+
+          <!-- Run_Plot → Fault -->
+          <path d="M 505,432 C 700,380 848,180 848,126" fill="none" stroke="#c06060" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#sm-f)"/>
+          <text x="710" y="375" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#c06060">[estop]</text>
+
+          <!-- ── FAULT RECOVERY ── -->
+          <path d="M 902,84 C 902,16 85,16 85,68" fill="none" stroke="#686868" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#sm-m)"/>
+          <text x="492" y="11" text-anchor="middle" font-family="Courier New,monospace" font-size="10" fill="#686868">[after(15, sec)]</text>
+
+          <!-- ── LEGEND ── -->
+          <line x1="20"  y1="499" x2="46"  y2="499" stroke="#d4924a" stroke-width="1.5"/>
+          <text x="52"  y="503" font-family="Arial,sans-serif" font-size="10" fill="#686868">Normal transition</text>
+          <line x1="190" y1="499" x2="216" y2="499" stroke="#c06060" stroke-width="1.2" stroke-dasharray="4,3"/>
+          <text x="222" y="503" font-family="Arial,sans-serif" font-size="10" fill="#686868">E-stop &#x2192; Fault</text>
+          <line x1="355" y1="499" x2="381" y2="499" stroke="#686868" stroke-width="1.2" stroke-dasharray="5,3"/>
+          <text x="387" y="503" font-family="Arial,sans-serif" font-size="10" fill="#686868">Fault recovery [after(15, sec)]</text>
+        </svg>
+        <div class="design-card-info">
+          <div class="design-card-title">Plotter Homing Sequence</div>
+          <div class="design-card-desc">
+            On power-up the plotter runs a two-axis homing sequence before accepting plot commands.
+            The X axis seeks its limit switch, backs off, then the Y axis repeats the same
+            procedure using both left and right home switches simultaneously. Once both axes are
+            zeroed, the machine enters <strong style="color:#80d080;">Ready</strong> and waits for
+            a <code style="color:var(--text);font-size:0.82rem;">start_plot</code> signal.
+            Any e-stop event transitions immediately to
+            <strong style="color:#e08080;">Fault</strong>, which resets to Boot after 15 seconds.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Triangulation -->
+    <div class="tech-group">
+      <div class="design-group-title">Position Triangulation &mdash; Law of Cosines</div>
+      <div class="tech-two-col">
+
+        <div class="trig-svg-wrap">
+          <svg viewBox="0 0 460 285" width="100%" style="max-width:460px;display:block;">
+            <!-- Active surface -->
+            <rect x="30" y="60" width="400" height="205" rx="3"
+                  fill="#1a1c22" stroke="#2c2f38" stroke-width="1.5"/>
+            <text x="38" y="252" font-size="11" fill="#8a8a8a"
+                  font-family="Arial,sans-serif">500 &times; 500 mm active surface</text>
+
+            <!-- Baseline -->
+            <line x1="62" y1="60" x2="398" y2="60"
+                  stroke="#d4924a" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <text x="178" y="50" font-size="12" fill="#d4924a"
+                  font-family="Courier New,monospace">c = 457.2 mm</text>
+
+            <!-- dA line -->
+            <line x1="62" y1="60" x2="215" y2="195"
+                  stroke="#50b4ff" stroke-width="1.5"/>
+            <!-- dB line -->
+            <line x1="398" y1="60" x2="215" y2="195"
+                  stroke="#ffa028" stroke-width="1.5"/>
+
+            <!-- Angle arc at A -->
+            <path d="M 82 60 A 20 20 0 0 1 74.9 75.0"
+                  fill="none" stroke="#50b4ff" stroke-width="1.3"/>
+
+            <!-- Sensor A -->
+            <circle cx="62" cy="60" r="7" fill="#d4924a" stroke="#8a5c28" stroke-width="1.5"/>
+            <text x="50" y="44" font-size="14" font-weight="700"
+                  fill="#f0eeea" font-family="Arial,sans-serif">A</text>
+
+            <!-- Sensor B -->
+            <circle cx="398" cy="60" r="7" fill="#d4924a" stroke="#8a5c28" stroke-width="1.5"/>
+            <text x="390" y="44" font-size="14" font-weight="700"
+                  fill="#f0eeea" font-family="Arial,sans-serif">B</text>
+
+            <!-- Stylus -->
+            <circle cx="215" cy="195" r="5" fill="#64dc64" stroke="#3a8a3a" stroke-width="1.5"/>
+            <text x="224" y="212" font-size="12"
+                  fill="#f0eeea" font-family="Courier New,monospace">P(x, y)</text>
+
+            <!-- dA label -->
+            <text x="96" y="138" font-size="13" fill="#50b4ff"
+                  font-family="Courier New,monospace">d&#8336;</text>
+            <!-- dB label -->
+            <text x="322" y="138" font-size="13" fill="#ffa028"
+                  font-family="Courier New,monospace">d&#8337;</text>
+
+            <!-- Alpha label -->
+            <text x="85" y="86" font-size="14" fill="#50b4ff"
+                  font-family="Georgia,serif">&#945;</text>
+          </svg>
+        </div>
+
+        <div class="eq-block">
+          <div class="eq-sublabel">Law of Cosines derivation</div>
+          <div class="eq-line">Sensor A &rarr; (0, 0)</div>
+          <div class="eq-line">Sensor B &rarr; (c, 0)</div>
+          <div class="eq-line">c = 457.2 mm&nbsp;&nbsp;&nbsp;<span style="color:var(--muted);font-size:0.78rem;">(18 in &times; 25.4)</span></div>
+          <div class="eq-line" style="margin-top:1rem;">
+            cos&#945; = <em>(d&#8336;&#178; + c&#178; &minus; d&#8337;&#178;)</em>
+          </div>
+          <div class="eq-line" style="padding-left:4.6rem;">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;</em>
+          </div>
+          <div class="eq-line" style="padding-left:4.6rem;">
+            <em>2 &middot; d&#8336; &middot; c</em>
+          </div>
+          <div class="eq-line" style="margin-top:0.8rem;">x = d&#8336; &middot; cos&#945;</div>
+          <div class="eq-line">y = d&#8336; &middot; sin&#945;</div>
+          <div class="eq-note">
+            Sensor A and Sensor B each read a median zone distance from their
+            4&times;4 SPAD array. The two distances d&#8336; and d&#8337; and the
+            fixed baseline c fully define the triangle; the law of cosines
+            yields angle &#945; at Sensor A, giving Cartesian coordinates directly.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- IIR Filter -->
+    <div class="tech-group">
+      <div class="design-group-title">IIR Low-Pass Filter &mdash; Z-Transform &amp; Direct Form II</div>
+      <div class="tech-two-col">
+
+        <div class="eq-block">
+          <div class="eq-sublabel">Transfer function</div>
+          <div class="eq-line">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>0.122(1 + z&#8315;&#185;)</em>
+          </div>
+          <div class="eq-line">H(z) = <em>&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;</em></div>
+          <div class="eq-line">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>1 &minus; 0.7561 z&#8315;&#185;</em>
+          </div>
+          <div class="eq-sublabel" style="margin-top:1.4rem;">Difference equations (Direct Form II)</div>
+          <div class="eq-line">w[n] = x[n] + <em>0.7561</em> &middot; w[n&minus;1]</div>
+          <div class="eq-line">y[n] = <em>0.122</em> &middot; w[n] + <em>0.122</em> &middot; w[n&minus;1]</div>
+          <div class="eq-note">
+            DC gain&nbsp;= 0.244 / (1 &minus; 0.7561) &asymp; <strong style="color:var(--text);">1.0</strong>
+            &nbsp;&nbsp;&mdash;&nbsp;&nbsp;
+            &minus;3 dB cutoff&nbsp;&asymp; <strong style="color:var(--text);">2.6 Hz</strong>
+            &nbsp;at f&#8347; = 60 Hz
+          </div>
+        </div>
+
+        <div class="eq-block">
+          <div class="eq-sublabel">Tunable pole form</div>
+          <div class="eq-line">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>B&#8320;(1 + z&#8315;&#185;)</em>
+          </div>
+          <div class="eq-line">H(z) = <em>&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;&#8213;</em></div>
+          <div class="eq-line">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>1 &minus; p &middot; z&#8315;&#185;</em>
+          </div>
+          <div class="eq-line" style="margin-top:0.8rem;">B&#8320; = (1 &minus; p) / 2</div>
+          <div class="eq-line">p &isin; [0.10,&nbsp;0.96]</div>
+          <div class="eq-sublabel" style="margin-top:1.4rem;">Cutoff frequency</div>
+          <div class="eq-line">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;f&#8347;
+          </div>
+          <div class="eq-line">f&#8338; = <em>&#8213;&#8213;&#8213;</em> &middot; arccos<em>&thinsp;( 2p / (1 + p&#178;) )</em></div>
+          <div class="eq-line">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2&#960;
+          </div>
+          <div class="eq-note">
+            Raising p moves the pole toward the unit circle, narrowing the
+            passband (lower cutoff). Default p&nbsp;= 0.7561 yields &asymp;&thinsp;2.6&nbsp;Hz,
+            well below the tremor band of 5&ndash;12&nbsp;Hz.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- UART Protocol -->
+    <div class="tech-group">
+      <div class="design-group-title">UART Serial Protocol</div>
+      <div class="tech-two-col">
+
+        <div class="eq-block">
+          <div class="eq-sublabel">Sensor MCU &rarr; Plotter MCU (USART3)</div>
+          <div class="eq-line">Baud rate:&nbsp;&nbsp;<em>115200</em></div>
+          <div class="eq-line">Frame:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>8N1</em></div>
+          <div class="eq-line">Packet size:&nbsp;<em>10 bytes</em></div>
+          <div class="eq-sublabel" style="margin-top:1.4rem;">Packet structure</div>
+          <div class="eq-line"><em>0xAA</em> &nbsp;[start byte]</div>
+          <div class="eq-line">bytes 1&ndash;4 &nbsp;x coordinate (float, 32-bit)</div>
+          <div class="eq-line">bytes 5&ndash;8 &nbsp;y coordinate (float, 32-bit)</div>
+          <div class="eq-line"><em>0xFF</em> &nbsp;[end byte]</div>
+          <div class="eq-note">
+            x and y are IEEE 754 single-precision floats transmitted
+            little-endian via <code style="color:var(--text);font-size:0.82rem;">memcpy</code>.
+            They carry the already-computed Cartesian coordinates in mm,
+            derived from the law of cosines on the sensor MCU before transmission.
+          </div>
+        </div>
+
+        <div class="proto-block"><span class="proto-cmt">/* firmware — flight_sensors/Core/Src/main.c */</span>
+
+uint8_t buf[10];
+
+buf[0] = <span class="proto-key">0xAA</span>;           <span class="proto-cmt">// start marker</span>
+memcpy(&buf[1], &x, 4);  <span class="proto-cmt">// x position (mm)</span>
+memcpy(&buf[5], &y, 4);  <span class="proto-cmt">// y position (mm)</span>
+buf[9] = <span class="proto-key">0xFF</span>;           <span class="proto-cmt">// end marker</span>
+
+HAL_UART_Transmit(&huart3, buf, 10, HAL_MAX_DELAY);</div>
+
       </div>
     </div>
 
