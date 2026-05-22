@@ -98,8 +98,8 @@
     </div>
     <div class="ctrl-row">
       <span class="lbl">Amplitude</span>
-      <input type="range" id="sTA" min="1" max="50" step="1" value="20">
-      <span class="val"><span id="vTA">20</span> mm</span>
+      <input type="range" id="sTA" min="1" max="50" step="1" value="10">
+      <span class="val"><span id="vTA">10</span> mm</span>
     </div>
   </div>
 
@@ -147,7 +147,7 @@ const GRID_N    = 5;
 
 // ── Mutable params (sliders) ──────────────────────────────────────────────────
 let TREMOR_HZ  = 5.0;
-let TREMOR_AMP = 20.0;
+let TREMOR_AMP = 10.0;
 let FB0, FB1, FA1;   // filter coefficients — set by designFilter()
 
 // ── Filter design (1st-order Butterworth via bilinear transform) ──────────────
@@ -190,14 +190,11 @@ function cutoffFromStopband(fstop) {
 let mouseMode  = true;
 let filterMode = true;
 let tremorMode = false;
-let autoPlot   = false;
 let simT       = 0;
 let trail      = [];
-let lastPlot   = null;
 let lmbHeld    = false;
-let drawMode   = 1;           // 1 = tremor/raw   2 = filtered
-let lastRawDraw  = null;
-let lastFiltDraw = null;
+let drawMode   = 'filtered';  // 'filtered' | 'tremor'
+let lastDraw   = null;
 let filtX = { v: 0, ok: false };
 let filtY = { v: 0, ok: false };
 let mouseW = [BASELINE / 2, SURF_D / 2];
@@ -324,27 +321,47 @@ function render(truePos, rawPos, filtPos, dA, dB) {
   }
 
   // ── HUD ──────────────────────────────────────────────────────────────────
-  let hy=18;ctx.textAlign='left';ctx.font='14px monospace';
-  const row=(t,col=C.hud)=>{ctx.fillStyle=col;ctx.fillText(t,14,hy);hy+=20;};
-  row(mouseMode?'MOUSE MODE':'SIM MODE',mouseMode?'#c896ff':'#64dc64');
-  if(tremorMode)row(`TREMOR  ${TREMOR_HZ.toFixed(1)} Hz  \xb1${TREMOR_AMP} mm`,'#ff7828');
-  row(drawMode===1?'DRAW: TREMOR  [1]':'DRAW: FILTERED [2]',drawMode===1?C.drawRaw:C.drawFilt);
-  hy+=4;
-  row(`d_A  ${dA.toFixed(1).padStart(8)} mm`,C.sA);
-  row(`d_B  ${dB.toFixed(1).padStart(8)} mm`,C.sB);
-  hy+=4;
-  if(rawPos){row('--- raw ---','#787878');row(`X  ${(rawPos[0]-SX0).toFixed(1).padStart(8)} mm`,C.raw);row(`Y  ${(rawPos[1]-SY0).toFixed(1).padStart(8)} mm`,C.raw);}
-  if(filtPos&&filterMode){row('--- filtered ---','#787878');row(`X  ${(filtPos[0]-SX0).toFixed(1).padStart(8)} mm`,C.trig);row(`Y  ${(filtPos[1]-SY0).toFixed(1).padStart(8)} mm`,C.trig);}
-  if(!rawPos)row('out of range','#ff5050');
+  ctx.font='14px monospace'; ctx.textAlign='left';
+  ctx.fillStyle=mouseMode?'#c896ff':'#64dc64';
+  ctx.fillText(mouseMode?'MOUSE MODE':'SIM MODE',14,18);
+
+  // Data block — bottom-right
+  const hudRows=[];
+  if(tremorMode)hudRows.push([`TREMOR  ${TREMOR_HZ.toFixed(1)} Hz  \xb1${TREMOR_AMP} mm`,'#ff7828']);
+  hudRows.push([`d_A  ${dA.toFixed(1).padStart(8)} mm`,C.sA]);
+  hudRows.push([`d_B  ${dB.toFixed(1).padStart(8)} mm`,C.sB]);
+  if(!rawPos){
+    hudRows.push(['out of range','#ff5050']);
+  }else{
+    hudRows.push(['--- raw ---','#787878']);
+    hudRows.push([`X  ${(rawPos[0]-SX0).toFixed(1).padStart(8)} mm`,C.raw]);
+    hudRows.push([`Y  ${(rawPos[1]-SY0).toFixed(1).padStart(8)} mm`,C.raw]);
+  }
+  if(filtPos&&filterMode){
+    hudRows.push(['--- filtered ---','#787878']);
+    hudRows.push([`X  ${(filtPos[0]-SX0).toFixed(1).padStart(8)} mm`,C.trig]);
+    hudRows.push([`Y  ${(filtPos[1]-SY0).toFixed(1).padStart(8)} mm`,C.trig]);
+  }
+  const ROW_H=20, startY=H-10-hudRows.length*ROW_H;
+  ctx.textAlign='right';
+  hudRows.forEach(([t,col],i)=>{ctx.fillStyle=col;ctx.fillText(t,W-14,startY+i*ROW_H);});
 
   // ── Legend ────────────────────────────────────────────────────────────────
-  const lx=W-212;let ly=18;ctx.font='12px monospace';
-  for(const[col,lbl]of[[C.true,'True position'],[C.trig,'Filtered position'],[C.raw,'Raw triangulated'],[C.sA,'Sensor A arc'],[C.sB,'Sensor B arc'],[C.drawRaw,'Tremor draw  [1]+LMB'],[C.drawFilt,'Filtered draw [2]+LMB'],['#50dcff','Auto-plot (P)'],]){
+  const lx=W-212;let ly=18;ctx.font='12px monospace';ctx.textAlign='left';
+  const drawCol=drawMode==='tremor'?C.drawRaw:C.drawFilt;
+  for(const[col,lbl]of[
+    [C.true,'True position'],[C.trig,'Filtered position'],
+    [C.raw,'Raw triangulated'],[C.sA,'Sensor A arc'],[C.sB,'Sensor B arc'],
+    [drawCol,`Draw: ${drawMode}  [D]+LMB`]
+  ]){
     ctx.beginPath();ctx.arc(lx+6,ly+5,5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
-    ctx.fillStyle=C.hud;ctx.textAlign='left';ctx.fillText(lbl,lx+18,ly+10);ly+=18;
+    ctx.fillStyle=C.hud;ctx.fillText(lbl,lx+18,ly+10);ly+=18;
   }
   ly+=5;
-  for(const[key,desc,state]of[['Tab','Mouse / Sim',mouseMode],['F','Filter',filterMode],['T','Tremor',tremorMode],['1','Tremor draw',drawMode===1],['2','Filt draw',drawMode===2],['P','Plot path',autoPlot],['C','Clear',null]]){
+  for(const[key,desc,state]of[
+    ['Tab','Mouse / Sim',mouseMode],['F','Filter',filterMode],
+    ['T','Tremor',tremorMode],['D',`Draw: ${drawMode}`,null],['C','Clear',null]
+  ]){
     ctx.fillStyle='#dcc850';ctx.fillText(`[${key}]`,lx,ly);
     const kw=ctx.measureText(`[${key}]`).width;
     ctx.fillStyle=C.hud;ctx.fillText(` ${desc}`,lx+kw,ly);
@@ -376,25 +393,21 @@ function loop(ts){
     filt=[filterStep(filtX,raw[0]),filterStep(filtY,raw[1])];
   }
 
-  // Draw modes
+  // Draw stroke — mouse-held only, filtered or tremor output
   if(lmbHeld){
-    if(drawMode===1&&raw){
-      const cur=w2s(...raw);
-      if(lastRawDraw){dctx.beginPath();dctx.moveTo(lastRawDraw[0],lastRawDraw[1]);dctx.lineTo(cur[0],cur[1]);dctx.strokeStyle=C.drawRaw;dctx.lineWidth=3;dctx.stroke();}
-      lastRawDraw=cur;lastFiltDraw=null;
-    }else if(drawMode===2&&filt){
-      const cur=w2s(...filt);
-      if(lastFiltDraw){dctx.beginPath();dctx.moveTo(lastFiltDraw[0],lastFiltDraw[1]);dctx.lineTo(cur[0],cur[1]);dctx.strokeStyle=C.drawFilt;dctx.lineWidth=3;dctx.stroke();}
-      lastFiltDraw=cur;lastRawDraw=null;
+    let pt=null, strokeCol;
+    if(drawMode==='tremor'){
+      pt=w2s(tx,ty); strokeCol=C.drawRaw;
+    }else{
+      const dp=(filt&&filterMode)?filt:raw;
+      if(dp){pt=w2s(...dp);strokeCol=C.drawFilt;}
     }
-  }else{lastRawDraw=null;lastFiltDraw=null;}
-
-  // Auto-plot
-  if(autoPlot){
-    const cur=w2s(tx,ty);
-    if(lastPlot){dctx.beginPath();dctx.moveTo(lastPlot[0],lastPlot[1]);dctx.lineTo(cur[0],cur[1]);dctx.strokeStyle=C.plot;dctx.lineWidth=2;dctx.stroke();}
-    lastPlot=cur;
-  }else{lastPlot=null;}
+    if(pt){
+      if(lastDraw){dctx.beginPath();dctx.moveTo(lastDraw[0],lastDraw[1]);dctx.lineTo(pt[0],pt[1]);dctx.strokeStyle=strokeCol;dctx.lineWidth=3;dctx.stroke();}
+      else{dctx.beginPath();dctx.arc(pt[0],pt[1],2,0,Math.PI*2);dctx.fillStyle=strokeCol;dctx.fill();}
+      lastDraw=pt;
+    }
+  }else{lastDraw=null;}
 
   render([tx,ty],raw,filt,dA,dB);
 }
@@ -405,17 +418,15 @@ canvas.addEventListener('mousemove',e=>{
   mouseW=s2w(e.clientX-r.left,e.clientY-r.top);
 });
 canvas.addEventListener('mousedown',()=>{lmbHeld=true;});
-canvas.addEventListener('mouseup',()=>{lmbHeld=false;lastRawDraw=null;lastFiltDraw=null;});
-canvas.addEventListener('mouseleave',()=>{lmbHeld=false;lastRawDraw=null;lastFiltDraw=null;});
+canvas.addEventListener('mouseup',()=>{lmbHeld=false;lastDraw=null;});
+canvas.addEventListener('mouseleave',()=>{lmbHeld=false;lastDraw=null;});
 
 document.addEventListener('keydown',e=>{
   switch(e.key){
     case'Tab':e.preventDefault();mouseMode=!mouseMode;simT=0;trail=[];filtX.ok=filtY.ok=false;break;
-    case'f':case'F':filterMode=!filterMode;filtX.ok=filtY.ok=false;break;
+    case'f':case'F':filterMode=!filterMode;filtX.ok=filtY.ok=false;lastDraw=null;break;
     case't':case'T':tremorMode=!tremorMode;break;
-    case'1':drawMode=1;lastRawDraw=null;lastFiltDraw=null;break;
-    case'2':drawMode=2;lastRawDraw=null;lastFiltDraw=null;break;
-    case'p':case'P':autoPlot=!autoPlot;lastPlot=null;break;
+    case'd':case'D':drawMode=drawMode==='filtered'?'tremor':'filtered';lastDraw=null;break;
     case'c':case'C':dctx.clearRect(0,0,W,H);break;
   }
 });
