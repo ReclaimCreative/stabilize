@@ -636,6 +636,7 @@
     <li><a href="#about">About</a></li>
     <li><a href="#design">Design</a></li>
     <li><a href="#technical">Technical</a></li>
+    <li><a href="concepts.html">Concepts</a></li>
     <li><a href="https://github.com/ReclaimCreative" target="_blank" rel="noopener"
            style="display:inline-flex;align-items:center;gap:0.4rem;">
       <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -683,12 +684,12 @@
       <p>
         Reclaim Creative is a proposal to use a combination of robotics and digital
         signal processing to filter out essential tremor and allow an artist to regain
-        their ability to draw. The system comprises three components: a stylus, a
-        surface outfitted with position sensors, and a Cartesian-style plotting robot
+        their ability to draw. The system comprises two main components: a surface outfitted with
+        time-of-flight position sensors, and a Cartesian-style plotting robot
         capable of illustrating on a 2-D surface.
       </p>
       <p>
-        The stylus is held by the artist inside a sensor zone where time-of-flight
+        The artist places their hand inside a sensor zone where time-of-flight
         sensors triangulate its position. The triangulated signal is filtered to remove
         tremor content, and the cleaned signal drives the Cartesian plotter to
         faithfully reproduce the artist's intended motion.
@@ -883,33 +884,11 @@
       </div>
     </div>
 
-    <!-- Stylus -->
+    <!-- Sensor Array -->
     <div class="design-group">
-      <div class="design-group-title">The Stylus</div>
+      <div class="design-group-title">Sensor Array</div>
       <div class="design-grid">
         <div class="design-card featured">
-          <img src="images/image15.jpg" alt="Stylus CAD Cross-Section" />
-          <div class="design-card-info">
-            <div class="design-card-title">Stylus Cross-Section</div>
-            <div class="design-card-desc">
-              Pressing the actuating tip creates a momentary circuit closure via mechanical
-              switch, powering the IR LED at the opposite end. The plotter reads this
-              infrared signal as the pen-down command, enabling precise on/off control
-              without any wireless communication.
-            </div>
-          </div>
-        </div>
-        <div class="design-card">
-          <img src="images/image12.jpg" alt="Stylus Circuit Schematic" />
-          <div class="design-card-info">
-            <div class="design-card-title">Stylus Circuit</div>
-            <div class="design-card-desc">
-              Minimal circuit: a 1.5 V AA cell, mechanical switch, 10&Omega; current-limiting
-              resistor, and infrared LED. No microcontroller required in the stylus itself.
-            </div>
-          </div>
-        </div>
-        <div class="design-card">
           <img src="images/image18.jpg" alt="Sensor Array Geometry Diagram" />
           <div class="design-card-info">
             <div class="design-card-title">Sensor Array &amp; Position Triangulation</div>
